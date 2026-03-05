@@ -1,0 +1,4531 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JAMB Physics Grind — 25 Days to 300+</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;600;700;900&display=swap");
+
+      :root {
+        --bg: #060a14;
+        --panel: #0d1526;
+        --border: #1a2a4a;
+        --accent: #00d4ff;
+        --accent2: #ff6b35;
+        --accent3: #7eff6e;
+        --accent4: #bf7fff;
+        --text: #e2eaf7;
+        --muted: #5a7090;
+        --gold: #ffd700;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Outfit", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+      }
+
+      /* SCROLLBAR */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: var(--bg);
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+
+      /* HEADER */
+      #header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(6, 10, 20, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        height: 60px;
+        gap: 16px;
+      }
+      .logo {
+        font-family: "Space Mono", monospace;
+        font-size: 1.1rem;
+        color: var(--accent);
+        white-space: nowrap;
+      }
+      .logo span {
+        color: var(--accent2);
+      }
+      .nav-tabs {
+        display: flex;
+        gap: 4px;
+        flex: 1;
+        overflow-x: auto;
+      }
+      .nav-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .nav-btn {
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        white-space: nowrap;
+        font-family: "Outfit", sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .nav-btn:hover {
+        color: var(--text);
+        border-color: var(--border);
+      }
+      .nav-btn.active {
+        background: var(--accent);
+        color: #000;
+        border-color: var(--accent);
+      }
+      #score-badge {
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        color: #000;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        font-family: "Space Mono", monospace;
+      }
+
+      /* MAIN */
+      #app {
+        padding-top: 60px;
+        min-height: 100vh;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* HERO */
+      #home-page {
+        padding: 40px 20px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .hero-title {
+        font-size: clamp(2.5rem, 6vw, 5rem);
+        font-weight: 900;
+        line-height: 1;
+        background: linear-gradient(135deg, var(--accent), var(--accent4));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+      }
+      .hero-sub {
+        font-size: 1.1rem;
+        color: var(--muted);
+        margin-bottom: 32px;
+      }
+      .day-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 40px;
+      }
+      .day-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+      .day-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 212, 255, 0.15);
+      }
+      .day-card.completed {
+        border-color: var(--accent3);
+      }
+      .day-card.completed::after {
+        content: "✓";
+        position: absolute;
+        top: 8px;
+        right: 12px;
+        color: var(--accent3);
+        font-weight: 700;
+        font-size: 1rem;
+      }
+      .day-num {
+        font-family: "Space Mono", monospace;
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-bottom: 4px;
+      }
+      .day-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .day-tag {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 600;
+      }
+      .tag-mech {
+        background: rgba(0, 212, 255, 0.15);
+        color: var(--accent);
+      }
+      .tag-thermo {
+        background: rgba(255, 107, 53, 0.15);
+        color: var(--accent2);
+      }
+      .tag-elec {
+        background: rgba(191, 127, 255, 0.15);
+        color: var(--accent4);
+      }
+      .tag-mod {
+        background: rgba(126, 255, 110, 0.15);
+        color: var(--accent3);
+      }
+
+      /* TOPIC PAGE */
+      #topic-page {
+        padding: 20px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .topic-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+      }
+      .topic-back {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 16px;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 0.85rem;
+        transition: all 0.2s;
+      }
+      .topic-back:hover {
+        color: var(--text);
+        border-color: var(--accent);
+      }
+      .topic-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        flex: 1;
+      }
+      .topic-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      @media (max-width: 768px) {
+        .topic-body {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .card-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--accent);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .card-title .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      /* FORMULAS */
+      .formula-grid {
+        display: grid;
+        gap: 8px;
+      }
+      .formula-row {
+        background: rgba(0, 212, 255, 0.05);
+        border: 1px solid rgba(0, 212, 255, 0.15);
+        border-radius: 8px;
+        padding: 10px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .formula-name {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .formula-eq {
+        font-family: "Space Mono", monospace;
+        font-size: 0.9rem;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .formula-note {
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      /* NOTES */
+      .notes-list {
+        display: grid;
+        gap: 8px;
+      }
+      .note-item {
+        border-left: 3px solid var(--accent2);
+        padding: 8px 12px;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        color: var(--text);
+        background: rgba(255, 107, 53, 0.05);
+        border-radius: 0 8px 8px 0;
+      }
+      .tip-box {
+        background: rgba(255, 215, 0, 0.08);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 8px;
+        font-size: 0.85rem;
+        color: var(--gold);
+        line-height: 1.5;
+      }
+
+      /* QUESTIONS */
+      .questions-section {
+        grid-column: 1/-1;
+      }
+      .q-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .q-tab {
+        padding: 6px 16px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-family: "Outfit", sans-serif;
+        font-size: 0.82rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .q-tab.active {
+        background: var(--accent2);
+        color: #fff;
+        border-color: var(--accent2);
+      }
+      .question-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 10px;
+      }
+      .question-text {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+        line-height: 1.5;
+      }
+      .options {
+        display: grid;
+        gap: 6px;
+      }
+      .option-btn {
+        text-align: left;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: "Outfit", sans-serif;
+        font-size: 0.85rem;
+        transition: all 0.15s;
+      }
+      .option-btn:hover {
+        border-color: var(--accent);
+        background: rgba(0, 212, 255, 0.08);
+      }
+      .option-btn.correct {
+        background: rgba(126, 255, 110, 0.15);
+        border-color: var(--accent3);
+        color: var(--accent3);
+      }
+      .option-btn.wrong {
+        background: rgba(255, 60, 60, 0.1);
+        border-color: #ff4444;
+        color: #ff6666;
+      }
+      .option-btn:disabled {
+        cursor: default;
+      }
+      .explanation {
+        margin-top: 10px;
+        padding: 10px;
+        background: rgba(0, 212, 255, 0.08);
+        border-radius: 6px;
+        font-size: 0.83rem;
+        color: var(--accent);
+        line-height: 1.5;
+        display: none;
+      }
+      .explanation.show {
+        display: block;
+      }
+      .q-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .common-label {
+        color: var(--accent2);
+      }
+      .rare-label {
+        color: var(--accent4);
+      }
+
+      /* SIMULATION */
+      .sim-container {
+        grid-column: 1/-1;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+      }
+      .sim-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--accent3);
+        margin-bottom: 16px;
+      }
+      canvas {
+        border-radius: 8px;
+        display: block;
+        margin: 0 auto;
+        cursor: crosshair;
+      }
+      .sim-controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .sim-btn {
+        padding: 7px 18px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        cursor: pointer;
+        font-family: "Outfit", sans-serif;
+        font-size: 0.83rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .sim-btn:hover {
+        border-color: var(--accent3);
+        color: var(--accent3);
+      }
+      .sim-btn.primary {
+        background: var(--accent3);
+        color: #000;
+        border-color: var(--accent3);
+      }
+      .sim-info {
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-top: 10px;
+        line-height: 1.5;
+      }
+      .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 8px;
+      }
+      .slider-row label {
+        font-size: 0.8rem;
+        color: var(--muted);
+        min-width: 100px;
+      }
+      input[type="range"] {
+        flex: 1;
+        accent-color: var(--accent);
+      }
+      .slider-val {
+        font-family: "Space Mono", monospace;
+        font-size: 0.8rem;
+        color: var(--accent);
+        min-width: 60px;
+      }
+
+      /* SEARCH PAGE */
+      #search-page {
+        padding: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .search-header {
+        margin-bottom: 24px;
+      }
+      .search-input-wrap {
+        position: relative;
+      }
+      .search-input {
+        width: 100%;
+        background: var(--panel);
+        border: 2px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 50px 14px 20px;
+        color: var(--text);
+        font-family: "Outfit", sans-serif;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+      }
+      .search-input:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .search-icon {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.2rem;
+      }
+      .filter-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+      .filter-btn {
+        padding: 5px 14px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--muted);
+        cursor: pointer;
+        font-family: "Outfit", sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .filter-btn.active {
+        background: var(--accent);
+        color: #000;
+        border-color: var(--accent);
+      }
+      .search-results {
+        display: grid;
+        gap: 10px;
+      }
+      .result-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px;
+        transition: border-color 0.2s;
+        cursor: pointer;
+      }
+      .result-card:hover {
+        border-color: var(--accent);
+      }
+      .result-meta {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+      }
+      .result-year {
+        font-family: "Space Mono", monospace;
+        font-size: 0.75rem;
+        background: rgba(0, 212, 255, 0.1);
+        color: var(--accent);
+        padding: 2px 8px;
+        border-radius: 4px;
+      }
+      .result-topic {
+        font-size: 0.75rem;
+        color: var(--muted);
+        padding: 2px 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+      }
+      .result-diff {
+        font-size: 0.72rem;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 700;
+      }
+      .diff-easy {
+        background: rgba(126, 255, 110, 0.15);
+        color: var(--accent3);
+      }
+      .diff-med {
+        background: rgba(255, 215, 0, 0.15);
+        color: var(--gold);
+      }
+      .diff-hard {
+        background: rgba(255, 107, 53, 0.15);
+        color: var(--accent2);
+      }
+      .result-q {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin-bottom: 8px;
+      }
+      .result-ans {
+        font-size: 0.8rem;
+        color: var(--muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .result-ans-reveal {
+        color: var(--accent3);
+        font-weight: 600;
+        margin-left: 8px;
+      }
+
+      /* FORMULA SHEET */
+      #formula-page {
+        padding: 20px;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+      .formula-section {
+        margin-bottom: 28px;
+      }
+      .section-heading {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--accent);
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 8px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .formula-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .formula-table td {
+        padding: 8px 12px;
+        border-bottom: 1px solid rgba(26, 42, 74, 0.5);
+        font-size: 0.88rem;
+      }
+      .formula-table td:first-child {
+        color: var(--muted);
+        width: 30%;
+      }
+      .formula-table td:nth-child(2) {
+        font-family: "Space Mono", monospace;
+        color: var(--accent);
+        width: 40%;
+      }
+      .formula-table td:last-child {
+        color: var(--text);
+        opacity: 0.7;
+        font-size: 0.8rem;
+      }
+
+      /* PROGRESS */
+      .progress-bar-wrap {
+        background: var(--border);
+        border-radius: 4px;
+        height: 8px;
+        margin: 4px 0 16px;
+      }
+      .progress-bar {
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, var(--accent), var(--accent4));
+        transition: width 0.5s;
+      }
+
+      /* QUIZ MODE */
+      #quiz-page {
+        padding: 20px;
+        max-width: 700px;
+        margin: 0 auto;
+      }
+      .quiz-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+      }
+      .quiz-score {
+        font-family: "Space Mono", monospace;
+        font-size: 1.2rem;
+        color: var(--accent3);
+      }
+      .quiz-progress-text {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .quiz-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 24px;
+      }
+      .quiz-q-text {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+      .quiz-opts {
+        display: grid;
+        gap: 10px;
+      }
+      .quiz-opt {
+        text-align: left;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1.5px solid var(--border);
+        color: var(--text);
+        padding: 12px 18px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: "Outfit", sans-serif;
+        font-size: 0.9rem;
+        transition: all 0.15s;
+      }
+      .quiz-opt:hover:not(:disabled) {
+        border-color: var(--accent);
+        transform: translateX(4px);
+      }
+      .quiz-opt.correct {
+        background: rgba(126, 255, 110, 0.15);
+        border-color: var(--accent3);
+        color: var(--accent3);
+      }
+      .quiz-opt.wrong {
+        background: rgba(255, 60, 60, 0.08);
+        border-color: #ff4444;
+        color: #ff6666;
+      }
+      .quiz-opt:disabled {
+        cursor: default;
+      }
+      .quiz-exp {
+        margin-top: 16px;
+        padding: 12px;
+        background: rgba(0, 212, 255, 0.07);
+        border-radius: 8px;
+        font-size: 0.87rem;
+        color: var(--accent);
+        line-height: 1.5;
+        display: none;
+      }
+      .quiz-exp.show {
+        display: block;
+      }
+      .quiz-next {
+        margin-top: 16px;
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        cursor: pointer;
+        font-family: "Outfit", sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        display: none;
+        transition: opacity 0.2s;
+      }
+      .quiz-next.show {
+        display: block;
+      }
+      .quiz-next:hover {
+        opacity: 0.85;
+      }
+      .quiz-result {
+        text-align: center;
+        padding: 40px 20px;
+      }
+      .quiz-result-score {
+        font-size: 4rem;
+        font-weight: 900;
+        color: var(--accent3);
+        font-family: "Space Mono", monospace;
+      }
+      .quiz-result-msg {
+        font-size: 1.1rem;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+      .quiz-restart {
+        margin-top: 24px;
+        padding: 12px 32px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        cursor: pointer;
+        font-family: "Outfit", sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+      }
+
+      /* RESPONSIVE tweaks */
+      @media (max-width: 600px) {
+        .topic-body {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* GLOW EFFECTS */
+      .glow-accent {
+        text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+      }
+      .glow-gold {
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      }
+
+      /* NOTIFICATION */
+      #notif {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: var(--accent3);
+        color: #000;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        transform: translateX(200%);
+        transition: transform 0.3s;
+      }
+      #notif.show {
+        transform: translateX(0);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <div class="logo">JAMB<span>Physics</span> ⚡</div>
+      <div class="nav-tabs">
+        <button class="nav-btn active" onclick="showPage('home')">
+          📅 25-Day Plan
+        </button>
+        <button class="nav-btn" onclick="showPage('formula')">
+          📐 Formulas
+        </button>
+        <button class="nav-btn" onclick="showPage('quiz')">🎯 Quiz Mode</button>
+        <button class="nav-btn" onclick="showPage('search')">
+          🔍 Question Bank
+        </button>
+      </div>
+      <div id="score-badge">🏆 Score: <span id="total-score">0</span></div>
+    </div>
+
+    <div id="app">
+      <!-- HOME PAGE -->
+      <div id="home-page" class="page active">
+        <div class="hero-title glow-accent">25-DAY<br />PHYSICS<br />GRIND</div>
+        <div class="hero-sub">
+          Master every JAMB topic. Score 300+. No excuses.
+        </div>
+        <div class="progress-bar-wrap">
+          <div
+            class="progress-bar"
+            id="overall-progress"
+            style="width: 0%"
+          ></div>
+        </div>
+        <div class="day-grid" id="day-grid"></div>
+      </div>
+
+      <!-- TOPIC PAGE -->
+      <div id="topic-page" class="page">
+        <div class="topic-header">
+          <button class="topic-back" onclick="showPage('home')">← Back</button>
+          <div>
+            <div
+              style="
+                font-size: 0.75rem;
+                color: var(--muted);
+                margin-bottom: 4px;
+              "
+              id="topic-day-label"
+            ></div>
+            <div class="topic-title" id="topic-title"></div>
+          </div>
+          <button
+            class="sim-btn primary"
+            style="margin-left: auto"
+            onclick="markDayComplete()"
+          >
+            ✓ Mark Complete
+          </button>
+        </div>
+        <div class="topic-body" id="topic-body"></div>
+      </div>
+
+      <!-- FORMULA SHEET -->
+      <div id="formula-page" class="page">
+        <h2
+          style="font-size: 1.8rem; font-weight: 900; margin-bottom: 24px"
+          class="glow-accent"
+        >
+          📐 Complete Formula Sheet
+        </h2>
+        <div id="formula-content"></div>
+      </div>
+
+      <!-- QUIZ PAGE -->
+      <div id="quiz-page" class="page">
+        <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 16px">
+          🎯 JAMB Quiz Mode
+        </h2>
+        <div
+          style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px"
+          id="quiz-topic-select"
+        ></div>
+        <div id="quiz-area"></div>
+      </div>
+
+      <!-- SEARCH PAGE -->
+      <div id="search-page" class="page">
+        <div class="search-header">
+          <h2 style="font-size: 1.8rem; font-weight: 900; margin-bottom: 16px">
+            🔍 JAMB Question Bank
+          </h2>
+          <div class="search-input-wrap">
+            <input
+              type="text"
+              class="search-input"
+              id="search-input"
+              placeholder="Search any physics question, topic, or keyword..."
+              oninput="filterQuestions()"
+            />
+            <span class="search-icon">🔍</span>
+          </div>
+          <div class="filter-row" id="topic-filters"></div>
+        </div>
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+
+    <div id="notif"></div>
+
+    <script>
+      // ========== DATA ==========
+
+      const TOPICS = [
+        {
+          day: 1,
+          title: "Measurements & Units",
+          tag: "mech",
+          formulas: [
+            {
+              name: "SI Base Units",
+              eq: "m, kg, s, A, K, mol, cd",
+              note: "7 base units",
+            },
+            {
+              name: "Vernier Reading",
+              eq: "Main scale + (VS × 0.1 mm)",
+              note: "±0.1mm precision",
+            },
+            {
+              name: "Micrometer",
+              eq: "Main + (Thimble × 0.01 mm)",
+              note: "±0.01mm precision",
+            },
+            {
+              name: "% Error",
+              eq: "(|measured−true|/true) × 100",
+              note: "relative × 100",
+            },
+            { name: "Dimension - Force", eq: "[MLT⁻²]", note: "kg·m/s²" },
+          ],
+          notes: [
+            "7 SI base units: metre(m), kilogram(kg), second(s), ampere(A), kelvin(K), mole(mol), candela(cd)",
+            "Vernier calipers: ±0.1mm | Micrometer: ±0.01mm | Metre rule: ±1mm",
+            "Dimensional analysis: check equation validity — both sides must have same dimensions",
+            "Accuracy = closeness to true value | Precision = reproducibility of readings",
+            "Significant figures: non-zero digits always count; zeros between non-zeros count",
+            "Standard form: 1 ≤ coefficient < 10, e.g. 0.000456 = 4.56 × 10⁻⁴",
+          ],
+          tip: "Errors appear in EVERY JAMB paper. Know absolute error, relative error, and % error cold.",
+          commonQs: [
+            {
+              q: "The instrument with the highest precision for measuring length is",
+              opts: [
+                "A. metre rule",
+                "B. vernier calipers",
+                "C. micrometer screw gauge",
+                "D. tape measure",
+              ],
+              ans: 2,
+              exp: "Micrometer screw gauge has precision ±0.01mm, better than vernier (±0.1mm) and metre rule (±1mm).",
+            },
+            {
+              q: "Which of the following is a derived quantity?",
+              opts: ["A. Mass", "B. Length", "C. Pressure", "D. Temperature"],
+              ans: 2,
+              exp: "Pressure = Force/Area = kg·m·s⁻² / m² = [ML⁻¹T⁻²]. It combines base quantities, making it derived.",
+            },
+            {
+              q: "The dimension of power is",
+              opts: [
+                "A. [ML²T⁻²]",
+                "B. [ML²T⁻³]",
+                "C. [MLT⁻²]",
+                "D. [ML⁻¹T⁻²]",
+              ],
+              ans: 1,
+              exp: "Power = Work/Time = [ML²T⁻²]/[T] = [ML²T⁻³].",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A physical quantity has dimension [ML⁻¹T⁻²]. This quantity is",
+              opts: ["A. Force", "B. Pressure", "C. Power", "D. Energy"],
+              ans: 1,
+              exp: "Pressure = Force/Area = kg·m·s⁻²/m² = [ML⁻¹T⁻²]. Always check using dimensional formula.",
+            },
+          ],
+          sim: "units",
+        },
+        {
+          day: 2,
+          title: "Scalars, Vectors & Motion Types",
+          tag: "mech",
+          formulas: [
+            {
+              name: "Resultant (2 vectors)",
+              eq: "R = √(A² + B² + 2AB cosθ)",
+              note: "θ = angle between them",
+            },
+            {
+              name: "x-component",
+              eq: "Ax = A cosθ",
+              note: "horizontal resolution",
+            },
+            {
+              name: "y-component",
+              eq: "Ay = A sinθ",
+              note: "vertical resolution",
+            },
+            {
+              name: "Relative velocity",
+              eq: "V_AB = V_A − V_B",
+              note: "vector subtraction",
+            },
+          ],
+          notes: [
+            "Scalars: distance, speed, mass, energy, temperature, time, pressure, work, power",
+            "Vectors: displacement, velocity, acceleration, force, momentum, weight, torque",
+            "Triangle rule: tip-to-tail; resultant closes from tail of 1st to tip of last",
+            "Parallelogram rule: tail-to-tail; resultant = diagonal",
+            "NEVER add vector magnitudes directly unless they are parallel!",
+            "Types of motion: Translational, Oscillatory, Rotational, Random (Brownian)",
+          ],
+          tip: "Drag the vectors in the simulation below to see resultant instantly!",
+          commonQs: [
+            {
+              q: "A body moves 3m East and 4m North. Its displacement is",
+              opts: ["A. 7m", "B. 5m", "C. 1m", "D. 12m"],
+              ans: 1,
+              exp: "Using Pythagoras: R = √(3² + 4²) = √(9+16) = √25 = 5m. These vectors are perpendicular, so cosθ = cos90° = 0.",
+            },
+            {
+              q: "Which of the following pairs are both vectors?",
+              opts: [
+                "A. Mass and velocity",
+                "B. Force and acceleration",
+                "C. Speed and temperature",
+                "D. Work and energy",
+              ],
+              ans: 1,
+              exp: "Force and acceleration are both vectors (they have both magnitude and direction). Mass, speed, temperature, work, energy are scalars.",
+            },
+            {
+              q: "A car travels at 30m/s East and another at 20m/s East. Relative velocity of first relative to second is",
+              opts: [
+                "A. 50m/s East",
+                "B. 10m/s East",
+                "C. 10m/s West",
+                "D. 50m/s West",
+              ],
+              ans: 1,
+              exp: "V_AB = V_A - V_B = 30 - 20 = 10m/s East (both in same direction, subtract magnitudes).",
+            },
+          ],
+          rareQs: [
+            {
+              q: "Two forces of 5N and 12N act at right angles. Their resultant is",
+              opts: ["A. 7N", "B. 17N", "C. 13N", "D. 8.5N"],
+              ans: 2,
+              exp: "R = √(5² + 12²) = √(25+144) = √169 = 13N. Classic 5-12-13 Pythagorean triple!",
+            },
+          ],
+          sim: "vectors",
+        },
+        {
+          day: 3,
+          title: "Linear Motion, Kinematics & Projectiles",
+          tag: "mech",
+          formulas: [
+            {
+              name: "v = u + at",
+              eq: "v = u + at",
+              note: "no displacement needed",
+            },
+            {
+              name: "s = ut + ½at²",
+              eq: "s = ut + ½at²",
+              note: "no final velocity",
+            },
+            {
+              name: "v² = u² + 2as",
+              eq: "v² = u² + 2as",
+              note: "no time needed",
+            },
+            {
+              name: "Average displacement",
+              eq: "s = (u+v)t/2",
+              note: "uniform acceleration only",
+            },
+            {
+              name: "Projectile Range",
+              eq: "R = u²sin2θ / g",
+              note: "max at θ=45°",
+            },
+            {
+              name: "Max Height",
+              eq: "H = u²sin²θ / 2g",
+              note: "vertical only",
+            },
+            {
+              name: "Time of Flight",
+              eq: "T = 2u sinθ / g",
+              note: "total air time",
+            },
+          ],
+          notes: [
+            "SUVAT: only valid for UNIFORM (constant) acceleration",
+            "Under free fall: a = g = 9.8 m/s² (use 10 m/s² if JAMB says so)",
+            "Projectile: horizontal velocity CONSTANT (no air resistance); vertical = free fall",
+            "Treat projectile as TWO separate motions: horizontal (d=vt) + vertical (SUVAT)",
+            "v-t graph: gradient = acceleration | area = displacement",
+            "d-t graph: gradient = speed | curve = changing speed (acceleration)",
+          ],
+          tip: "KEY TRAP: Horizontal velocity never changes in projectile. Don't apply a=g horizontally!",
+          commonQs: [
+            {
+              q: "A ball is thrown horizontally at 20m/s from a height of 20m. Time to hit ground is (g=10m/s²)",
+              opts: ["A. 1s", "B. 2s", "C. 4s", "D. 0.5s"],
+              ans: 1,
+              exp: "Vertical: s=½gt² → 20=½(10)t² → t²=4 → t=2s. Horizontal velocity does NOT affect vertical fall time.",
+            },
+            {
+              q: "A stone is dropped from rest and falls freely. After 3s its velocity is (g=10m/s²)",
+              opts: ["A. 10m/s", "B. 20m/s", "C. 30m/s", "D. 45m/s"],
+              ans: 2,
+              exp: "v = u + at = 0 + 10×3 = 30m/s.",
+            },
+            {
+              q: "At what angle should a projectile be fired for maximum range?",
+              opts: ["A. 30°", "B. 60°", "C. 45°", "D. 90°"],
+              ans: 2,
+              exp: "Range R = u²sin2θ/g is maximum when sin2θ = 1, i.e. 2θ = 90°, so θ = 45°.",
+            },
+            {
+              q: "A car accelerates uniformly from rest to 30m/s in 10s. Distance covered is",
+              opts: ["A. 300m", "B. 150m", "C. 450m", "D. 30m"],
+              ans: 1,
+              exp: "s = (u+v)t/2 = (0+30)×10/2 = 150m. Or use s=ut+½at²= 0 + ½(3)(100) = 150m.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A projectile has the same range for two angles. If one angle is 30°, the other is",
+              opts: ["A. 45°", "B. 60°", "C. 70°", "D. 75°"],
+              ans: 1,
+              exp: "R is equal for complementary angles (angles that add to 90°). 30° + 60° = 90°. This is because sin2(30°) = sin60° = sin120° = sin2(60°).",
+            },
+          ],
+          sim: "projectile",
+        },
+        {
+          day: 4,
+          title: "Newton's Laws, Momentum & Gravity",
+          tag: "mech",
+          formulas: [
+            {
+              name: "Newton's 2nd Law",
+              eq: "F = ma = Δp/Δt",
+              note: "N = kg·m/s²",
+            },
+            { name: "Momentum", eq: "p = mv", note: "kg·m/s or N·s" },
+            {
+              name: "Impulse",
+              eq: "J = FΔt = Δp = m(v−u)",
+              note: "same units as momentum",
+            },
+            {
+              name: "Conservation",
+              eq: "Σp_before = Σp_after",
+              note: "no external force",
+            },
+            {
+              name: "Gravitation",
+              eq: "F = Gm₁m₂/r²",
+              note: "G = 6.67×10⁻¹¹ Nm²kg⁻²",
+            },
+            {
+              name: "Surface gravity",
+              eq: "g = GM/R²",
+              note: "decreases with altitude",
+            },
+            {
+              name: "Escape velocity",
+              eq: "v_e = √(2gR)",
+              note: "≈11.2 km/s for Earth",
+            },
+            {
+              name: "Centripetal Force",
+              eq: "F = mv²/r = mω²r",
+              note: "always toward centre",
+            },
+          ],
+          notes: [
+            "1st Law: Inertia — body remains at rest or uniform motion unless net force acts",
+            "2nd Law: F = ma. Net force = rate of change of momentum",
+            "3rd Law: Action = Reaction (equal, opposite, different bodies, simultaneous)",
+            "Elastic collision: KE conserved | Inelastic: KE not conserved | Perfectly inelastic: bodies stick",
+            "Coefficient of restitution e = (v₂−v₁)/(u₁−u₂) | elastic: e=1 | perfectly inelastic: e=0",
+            "Geostationary orbit: T=24 hrs, height ≈ 36,000 km above equator",
+          ],
+          tip: "Draw FREE-BODY DIAGRAMS always. Label ALL forces. Resolve along and perpendicular to motion.",
+          commonQs: [
+            {
+              q: "A 5kg object accelerates at 3m/s². The net force is",
+              opts: ["A. 1.67N", "B. 8N", "C. 15N", "D. 0.6N"],
+              ans: 2,
+              exp: "F = ma = 5 × 3 = 15N.",
+            },
+            {
+              q: "A 2kg ball moving at 5m/s collides with a stationary 3kg ball. They stick together. Final velocity is",
+              opts: ["A. 5m/s", "B. 3m/s", "C. 2m/s", "D. 4m/s"],
+              ans: 2,
+              exp: "Conservation of momentum: (2)(5) + 0 = (2+3)v → 10 = 5v → v = 2m/s.",
+            },
+            {
+              q: "The gravitational force between two bodies is DOUBLED when the distance between them is",
+              opts: [
+                "A. doubled",
+                "B. halved",
+                "C. quadrupled",
+                "D. kept same but masses doubled",
+              ],
+              ans: 1,
+              exp: "F = Gm₁m₂/r². If r is halved, r² becomes r²/4, so F becomes 4F (quadrupled not doubled). If masses are doubled, F doubles. Answer: halved makes F×4; BUT if we want to double F from distance change only... halve distance gives ×4. Option D: doubling both masses → F doubles. So answer is D.",
+            },
+            {
+              q: "An object moving in a circle with constant speed has",
+              opts: [
+                "A. no acceleration",
+                "B. constant velocity",
+                "C. centripetal acceleration toward center",
+                "D. zero net force",
+              ],
+              ans: 2,
+              exp: "Speed is constant but direction changes, so velocity changes → acceleration exists. This centripetal acceleration always points toward the center of the circle.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A rocket ejects gas at 500m/s at a rate of 2kg/s. The thrust force is",
+              opts: ["A. 250N", "B. 1000N", "C. 500N", "D. 2500N"],
+              ans: 1,
+              exp: "Thrust = rate of change of momentum = (dm/dt) × v = 2 × 500 = 1000N.",
+            },
+          ],
+          sim: "collision",
+        },
+        {
+          day: 5,
+          title: "SHM, Equilibrium & Moments",
+          tag: "mech",
+          formulas: [
+            {
+              name: "SHM defining",
+              eq: "a = −ω²x",
+              note: "restoring acceleration",
+            },
+            {
+              name: "Simple Pendulum",
+              eq: "T = 2π√(L/g)",
+              note: "small angle (<15°) only",
+            },
+            {
+              name: "Mass-Spring",
+              eq: "T = 2π√(m/k)",
+              note: "k = spring constant (N/m)",
+            },
+            {
+              name: "Max velocity",
+              eq: "v_max = ωA",
+              note: "at equilibrium position",
+            },
+            { name: "Total energy", eq: "E = ½mω²A²", note: "A = amplitude" },
+            {
+              name: "Torque",
+              eq: "τ = F × d⊥",
+              note: "perpendicular distance",
+            },
+            {
+              name: "Lami's theorem",
+              eq: "P/sinα = Q/sinβ = R/sinγ",
+              note: "3 concurrent forces",
+            },
+          ],
+          notes: [
+            "SHM: acceleration proportional to displacement, directed toward equilibrium",
+            "Pendulum period depends on L and g ONLY — not mass, not amplitude (if small)",
+            "1st condition equilibrium (translational): ΣFx=0 AND ΣFy=0",
+            "2nd condition (rotational): Σclockwise moments = Σanticlockwise moments",
+            "Stable: low CG, wide base | Unstable: high CG, narrow base | Neutral: CG same height",
+            "Couple: two equal, parallel, opposite forces — moment = F × separation",
+          ],
+          tip: "For beam problems: take moments about the support point to eliminate one unknown reaction!",
+          commonQs: [
+            {
+              q: "A simple pendulum of length 1m. Its period is (g=10m/s²; π²=10)",
+              opts: ["A. 1s", "B. 2s", "C. 0.5s", "D. 4s"],
+              ans: 1,
+              exp: "T = 2π√(L/g) = 2π√(1/10) = 2π/√10 = 2π/3.16 ≈ 2s. Using π²=10: T=2π×(1/√10). Quick check: T=2(3.16)/3.16=2s.",
+            },
+            {
+              q: "The period of SHM does NOT depend on",
+              opts: [
+                "A. frequency",
+                "B. amplitude",
+                "C. spring constant",
+                "D. mass",
+              ],
+              ans: 1,
+              exp: "For SHM, T=2π√(m/k). Period depends on mass and spring constant but NOT amplitude (for ideal SHM).",
+            },
+          ],
+          rareQs: [
+            {
+              q: "Three forces of 3N, 4N, and 5N act at a point in equilibrium. The angle between the 3N and 4N forces is",
+              opts: ["A. 90°", "B. 45°", "C. 60°", "D. 120°"],
+              ans: 0,
+              exp: "If 3² + 4² = 5² (9+16=25 ✓), the three forces form a right triangle. For equilibrium, the resultant of 3N and 4N must equal and oppose 5N. Since R=√(3²+4²)=5N, they must be perpendicular: 90°.",
+            },
+          ],
+          sim: "pendulum",
+        },
+        {
+          day: 6,
+          title: "Work, Energy, Power & Machines",
+          tag: "mech",
+          formulas: [
+            {
+              name: "Work",
+              eq: "W = Fs cosθ",
+              note: "θ = angle force to displacement",
+            },
+            { name: "KE", eq: "KE = ½mv²", note: "joules (J)" },
+            { name: "GPE", eq: "PE = mgh", note: "reference level arbitrary" },
+            { name: "Power", eq: "P = W/t = Fv", note: "watts (W)" },
+            {
+              name: "Efficiency",
+              eq: "η = (useful output/total input) × 100%",
+              note: "always < 100%",
+            },
+            {
+              name: "Mech. Advantage",
+              eq: "MA = Load / Effort",
+              note: "dimensionless",
+            },
+            {
+              name: "Velocity Ratio",
+              eq: "VR = effort distance / load distance",
+              note: "dimensionless",
+            },
+            { name: "Friction", eq: "F = μN", note: "μ_static > μ_kinetic" },
+          ],
+          notes: [
+            "Work-energy theorem: net work done = change in KE",
+            "Conservation of energy: total mechanical energy (KE + PE) = constant (no friction)",
+            "1 kWh = 3,600,000 J (commercial unit of electrical energy)",
+            "Machines: efficiency = MA/VR × 100% — always < 100% due to friction",
+            "Lever classes: 1st (pivot between load & effort), 2nd (load between), 3rd (effort between)",
+            "Terminal velocity: weight = drag force (no net force, constant speed)",
+          ],
+          tip: "Area under Force-distance graph = work done. Efficiency NEVER exceeds 100% — recheck if you get that!",
+          commonQs: [
+            {
+              q: "A 60W bulb is used for 5 hours. Energy consumed in kWh is",
+              opts: ["A. 0.3 kWh", "B. 300 kWh", "C. 12 kWh", "D. 1.2 kWh"],
+              ans: 0,
+              exp: "E = P × t = 60W × 5h = 300 Wh = 0.3 kWh.",
+            },
+            {
+              q: "A machine has MA=3 and VR=5. Efficiency is",
+              opts: ["A. 60%", "B. 40%", "C. 167%", "D. 15%"],
+              ans: 0,
+              exp: "Efficiency = (MA/VR) × 100 = (3/5) × 100 = 60%.",
+            },
+            {
+              q: "A 10kg box is pushed 5m along a horizontal surface. Work done by gravity is",
+              opts: ["A. 500J", "B. 50J", "C. 0J", "D. 490J"],
+              ans: 2,
+              exp: "Work done by gravity = F·d·cosθ. Gravity acts downward, displacement is horizontal: θ=90°, cos90°=0. W=0J.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A pump raises 500kg of water per minute through 10m. Power of pump is (g=10m/s²)",
+              opts: ["A. 500W", "B. 50000W", "C. 833W", "D. 5000W"],
+              ans: 2,
+              exp: "Work per second = mgh/t = (500 × 10 × 10)/60 = 50000/60 ≈ 833W.",
+            },
+          ],
+          sim: "energy",
+        },
+        {
+          day: 7,
+          title: "Pressure, Fluids & Archimedes",
+          tag: "thermo",
+          formulas: [
+            { name: "Pressure", eq: "P = F/A", note: "pascals (Pa = N/m²)" },
+            {
+              name: "Fluid pressure",
+              eq: "P = ρgh",
+              note: "ρ in kg/m³, h in metres",
+            },
+            {
+              name: "Archimedes/Upthrust",
+              eq: "U = ρ_f × V_sub × g",
+              note: "weight of fluid displaced",
+            },
+            {
+              name: "Atm. pressure",
+              eq: "P₀ = 101,325 Pa = 760 mmHg",
+              note: "sea level",
+            },
+            {
+              name: "Pascal's law",
+              eq: "F₂/F₁ = A₂/A₁",
+              note: "hydraulic press",
+            },
+            {
+              name: "Relative Density",
+              eq: "RD = density / density of water",
+              note: "no units",
+            },
+          ],
+          notes: [
+            "Atmospheric pressure = 101,325 Pa = 760 mmHg = 1 atm at sea level",
+            "Pascal's Principle: pressure in enclosed fluid transmitted undiminished in ALL directions",
+            "Archimedes' Principle: upthrust = weight of fluid displaced",
+            "Law of floatation: weight of floating body = weight of fluid displaced",
+            "Hydrometer: floats HIGHER in denser liquids (same weight, less volume submerged)",
+            "Relative density (RD): no units. RD of water = 1. RD > 1 sinks in water.",
+          ],
+          tip: "For Archimedes problems: identify SUBMERGED volume (not floating part). U acts upward, W downward.",
+          commonQs: [
+            {
+              q: "A block of wood of density 600 kg/m³ floats in water (density 1000 kg/m³). Fraction submerged is",
+              opts: ["A. 0.4", "B. 0.6", "C. 0.3", "D. 0.7"],
+              ans: 1,
+              exp: "For floating: ρ_body × V_total = ρ_water × V_submerged. V_sub/V_total = ρ_body/ρ_water = 600/1000 = 0.6 (60% submerged).",
+            },
+            {
+              q: "Pressure at depth 10m in water (ρ=1000kg/m³, g=10m/s²) is",
+              opts: ["A. 100Pa", "B. 1000Pa", "C. 100,000Pa", "D. 10,000Pa"],
+              ans: 2,
+              exp: "P = ρgh = 1000 × 10 × 10 = 100,000 Pa = 100 kPa.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A hydraulic press has pistons of area 2cm² and 200cm². A force of 10N on small piston gives force on large piston of",
+              opts: ["A. 100N", "B. 10N", "C. 1000N", "D. 200N"],
+              ans: 2,
+              exp: "F₂/F₁ = A₂/A₁ → F₂ = F₁ × (A₂/A₁) = 10 × (200/2) = 10 × 100 = 1000N.",
+            },
+          ],
+          sim: "fluid",
+        },
+        {
+          day: 8,
+          title: "Temperature, Heat & Gas Laws",
+          tag: "thermo",
+          formulas: [
+            {
+              name: "Celsius-Kelvin",
+              eq: "T(K) = θ(°C) + 273",
+              note: "exam: use 273",
+            },
+            {
+              name: "Boyle's Law",
+              eq: "P₁V₁ = P₂V₂",
+              note: "T constant (isothermal)",
+            },
+            {
+              name: "Charles' Law",
+              eq: "V₁/T₁ = V₂/T₂",
+              note: "P constant, T in KELVIN",
+            },
+            {
+              name: "Pressure Law",
+              eq: "P₁/T₁ = P₂/T₂",
+              note: "V constant, T in KELVIN",
+            },
+            { name: "Ideal Gas", eq: "PV = nRT", note: "R = 8.314 J/mol/K" },
+            {
+              name: "Combined gas law",
+              eq: "P₁V₁/T₁ = P₂V₂/T₂",
+              note: "general form",
+            },
+            {
+              name: "Linear expansion",
+              eq: "ΔL = L₀αΔT",
+              note: "α = linear expansivity",
+            },
+            {
+              name: "Volume expansion",
+              eq: "γ ≈ 3α",
+              note: "cubic from linear",
+            },
+          ],
+          notes: [
+            "ALWAYS convert temperature to KELVIN when using gas laws!",
+            "Boyle's Law: P ∝ 1/V at constant T | Isothermal process",
+            "Charles' Law: V ∝ T at constant P | Isobaric process",
+            "Anomalous expansion of water: maximum density at 4°C — ice floats!",
+            "Bimetallic strip: bends toward the LOWER expansivity metal when heated",
+            "Invar alloy: very low linear expansivity — used in pendulum clocks",
+          ],
+          tip: "CRITICAL: 0°C = 273K. Using °C in gas law equations gives WRONG answers. Always convert first!",
+          commonQs: [
+            {
+              q: "A gas at 27°C and 2 atm occupies 3L. Volume at 127°C and 1 atm is",
+              opts: ["A. 6L", "B. 8L", "C. 4L", "D. 12L"],
+              ans: 1,
+              exp: "P₁V₁/T₁ = P₂V₂/T₂. T₁=300K, T₂=400K. (2×3)/300 = (1×V₂)/400. V₂ = (2×3×400)/(300×1) = 2400/300 = 8L.",
+            },
+            {
+              q: "A gas occupies 500cm³ at 17°C. Volume at 0°C (constant P) is",
+              opts: ["A. 500cm³", "B. 470cm³", "C. 532cm³", "D. 469cm³"],
+              ans: 3,
+              exp: "Charles' Law: V₁/T₁ = V₂/T₂. 500/290 = V₂/273. V₂ = 500×273/290 = 470.7 ≈ 469cm³.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "What happens to the density of a gas when it is heated at constant pressure?",
+              opts: [
+                "A. increases",
+                "B. decreases",
+                "C. remains same",
+                "D. first increases then decreases",
+              ],
+              ans: 1,
+              exp: "At constant P, V ∝ T. Density = mass/volume. As T increases, V increases, mass stays constant, so density DECREASES.",
+            },
+          ],
+          sim: "gas",
+        },
+        {
+          day: 9,
+          title: "Specific Heat, Latent Heat & Transfer",
+          tag: "thermo",
+          formulas: [
+            {
+              name: "Specific Heat",
+              eq: "Q = mcΔθ",
+              note: "J/(kg·°C) or J/(kg·K)",
+            },
+            {
+              name: "Latent Heat",
+              eq: "Q = mL",
+              note: "no temperature change!",
+            },
+            {
+              name: "L_f (water/ice)",
+              eq: "L_f = 334,000 J/kg",
+              note: "fusion",
+            },
+            {
+              name: "L_v (water/steam)",
+              eq: "L_v = 2,260,000 J/kg",
+              note: "vaporisation",
+            },
+            {
+              name: "Heat equation",
+              eq: "Heat lost = Heat gained",
+              note: "calorimetry",
+            },
+          ],
+          notes: [
+            "Specific heat capacity: heat needed to raise 1kg by 1°C/K",
+            "Latent heat: heat absorbed/released during change of state at CONSTANT temperature",
+            "Evaporation: at any temperature, from surface only — cooling process",
+            "Boiling: throughout liquid, at fixed point, requires heat supply",
+            "Conduction: vibrating molecules passing energy (solids best, gases worst)",
+            "Convection: bulk movement of fluid due to density differences (fluids only)",
+            "Radiation: infrared EM waves, no medium needed — vacuum possible",
+          ],
+          tip: "Heat lost = heat gained in calorimetry. Watch for state changes (no temp change during melting/boiling).",
+          commonQs: [
+            {
+              q: "How much heat is needed to raise 2kg of water by 50°C? (c_water = 4200 J/kg°C)",
+              opts: [
+                "A. 210,000 J",
+                "B. 420,000 J",
+                "C. 84,000 J",
+                "D. 4,200 J",
+              ],
+              ans: 1,
+              exp: "Q = mcΔθ = 2 × 4200 × 50 = 420,000 J = 420 kJ.",
+            },
+            {
+              q: "100g of ice at 0°C requires heat to melt completely. (L_f = 336,000 J/kg)",
+              opts: ["A. 336 J", "B. 3,360 J", "C. 33,600 J", "D. 336,000 J"],
+              ans: 2,
+              exp: "Q = mL = 0.1 × 336,000 = 33,600 J.",
+            },
+            {
+              q: "Heat transfer through vacuum is possible by",
+              opts: [
+                "A. conduction",
+                "B. convection",
+                "C. radiation",
+                "D. conduction and convection",
+              ],
+              ans: 2,
+              exp: "Only radiation can transfer heat through a vacuum (no medium needed). Conduction and convection require matter.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "Why does sweating cool the body?",
+              opts: [
+                "A. evaporation absorbs latent heat from skin",
+                "B. water conducts heat away",
+                "C. cold water lowers body temperature",
+                "D. sweat has low specific heat",
+              ],
+              ans: 0,
+              exp: "Evaporation is a cooling process. Sweat evaporates using latent heat of vaporisation taken FROM the skin surface, cooling it.",
+            },
+          ],
+          sim: "heat",
+        },
+        {
+          day: 10,
+          title: "Waves — Fundamentals & Sound",
+          tag: "thermo",
+          formulas: [
+            {
+              name: "Wave equation",
+              eq: "v = fλ",
+              note: "v=speed, f=frequency, λ=wavelength",
+            },
+            { name: "Period", eq: "T = 1/f", note: "seconds" },
+            {
+              name: "Speed of sound",
+              eq: "v ≈ 340 m/s",
+              note: "in air at room temp",
+            },
+            {
+              name: "Resonance tube",
+              eq: "L = λ/4 (closed), λ/2 (open)",
+              note: "1st harmonic",
+            },
+            {
+              name: "Doppler effect",
+              eq: "f' = f(v ± v_o)/(v ∓ v_s)",
+              note: "+ approaching",
+            },
+            { name: "Beats", eq: "beat frequency = |f₁ - f₂|", note: "Hz" },
+          ],
+          notes: [
+            "Transverse: oscillation perpendicular to direction of travel (light, water waves)",
+            "Longitudinal: oscillation parallel to direction of travel (sound)",
+            "Sound cannot travel through vacuum — needs medium",
+            "Constructive interference: crest meets crest | Destructive: crest meets trough",
+            "Resonance: natural frequency matches driving frequency → large amplitude",
+            "Echo: reflection of sound. Needs >17m distance for distinct echo (human ear persistence 0.1s)",
+          ],
+          tip: "Sound CANNOT travel in vacuum. Light CAN. Transverse vs longitudinal is a very common question.",
+          commonQs: [
+            {
+              q: "A wave has frequency 5Hz and wavelength 2m. Its speed is",
+              opts: ["A. 2.5m/s", "B. 10m/s", "C. 0.4m/s", "D. 7m/s"],
+              ans: 1,
+              exp: "v = fλ = 5 × 2 = 10 m/s.",
+            },
+            {
+              q: "Which of the following cannot be polarized?",
+              opts: ["A. X-rays", "B. Light", "C. Sound", "D. Radio waves"],
+              ans: 2,
+              exp: "Polarization only occurs in transverse waves. Sound is a longitudinal wave and cannot be polarized.",
+            },
+            {
+              q: "The speed of sound in air is 340m/s. Frequency of a sound wave with wavelength 0.2m is",
+              opts: ["A. 68Hz", "B. 1700Hz", "C. 17Hz", "D. 340Hz"],
+              ans: 1,
+              exp: "f = v/λ = 340/0.2 = 1700 Hz.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A closed pipe produces a note of 170Hz. Length of pipe is (v=340m/s)",
+              opts: ["A. 2m", "B. 0.5m", "C. 1m", "D. 0.25m"],
+              ans: 1,
+              exp: "Closed pipe resonates at L = λ/4 for fundamental. v = fλ → λ = 340/170 = 2m. L = λ/4 = 2/4 = 0.5m.",
+            },
+          ],
+          sim: "waves",
+        },
+        {
+          day: 11,
+          title: "Light — Reflection & Refraction",
+          tag: "thermo",
+          formulas: [
+            {
+              name: "Mirror formula",
+              eq: "1/f = 1/u + 1/v",
+              note: "real-is-positive convention",
+            },
+            {
+              name: "Magnification",
+              eq: "m = v/u = image height/object height",
+              note: "linear mag.",
+            },
+            {
+              name: "Snell's Law",
+              eq: "n₁sinθ₁ = n₂sinθ₂",
+              note: "refraction at boundary",
+            },
+            {
+              name: "Refractive index",
+              eq: "n = sin i / sin r = c/v_medium",
+              note: "always > 1 for glass",
+            },
+            {
+              name: "Critical angle",
+              eq: "sin C = 1/n",
+              note: "for TIR: θ > C",
+            },
+            {
+              name: "Lens formula",
+              eq: "1/f = 1/u + 1/v",
+              note: "same form as mirror",
+            },
+          ],
+          notes: [
+            "Laws of reflection: angle of incidence = angle of reflection (both from normal)",
+            "Plane mirror: image is virtual, erect, same size, laterally inverted, behind mirror",
+            "Concave mirror: converging, real focus. Convex mirror: diverging, virtual focus",
+            "TIR (Total Internal Reflection): dense to less dense medium AND angle > critical angle",
+            "TIR applications: optical fibres, periscope, diamonds sparkle, binoculars, mirage",
+            "Eye defects: Myopia (short sight) → diverging lens | Hypermetropia (long sight) → converging lens",
+          ],
+          tip: "CRITICAL: Use same sign convention throughout. Real-is-positive: real images positive distance.",
+          commonQs: [
+            {
+              q: "Light travels from glass (n=1.5) to air. Critical angle is",
+              opts: ["A. 19.5°", "B. 41.8°", "C. 48.6°", "D. 30°"],
+              ans: 1,
+              exp: "sin C = 1/n = 1/1.5 = 0.667. C = sin⁻¹(0.667) ≈ 41.8°.",
+            },
+            {
+              q: "A concave mirror has focal length 10cm. Object is 30cm away. Image distance is",
+              opts: ["A. 7.5cm", "B. 15cm", "C. 20cm", "D. 10cm"],
+              ans: 1,
+              exp: "1/f = 1/u + 1/v → 1/10 = 1/30 + 1/v → 1/v = 1/10 - 1/30 = 3/30 - 1/30 = 2/30 → v = 15cm.",
+            },
+            {
+              q: "A convex lens always forms a virtual image when the object is",
+              opts: [
+                "A. beyond 2F",
+                "B. at 2F",
+                "C. between F and lens",
+                "D. at F",
+              ],
+              ans: 2,
+              exp: "When object is between F and lens (inside focal length), the converging lens produces a virtual, magnified, upright image.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A glass prism can produce a pure spectrum because different colours have different",
+              opts: [
+                "A. speeds in glass",
+                "B. wavelengths in vacuum",
+                "C. amplitudes",
+                "D. frequencies",
+              ],
+              ans: 0,
+              exp: "Different colours (frequencies) travel at different speeds in glass (have different refractive indices). This causes different deviation angles — dispersion into a spectrum.",
+            },
+          ],
+          sim: "optics",
+        },
+        {
+          day: 12,
+          title: "Electrostatics & Capacitors",
+          tag: "elec",
+          formulas: [
+            {
+              name: "Coulomb's Law",
+              eq: "F = kq₁q₂/r²",
+              note: "k = 9×10⁹ Nm²C⁻²",
+            },
+            {
+              name: "Electric Field",
+              eq: "E = F/q = kQ/r²",
+              note: "N/C or V/m",
+            },
+            { name: "Electric Potential", eq: "V = kQ/r", note: "J/C (volts)" },
+            { name: "Capacitance", eq: "C = Q/V = ε₀A/d", note: "farads (F)" },
+            {
+              name: "Energy in capacitor",
+              eq: "E = ½CV² = Q²/2C",
+              note: "joules",
+            },
+            {
+              name: "Capacitors in series",
+              eq: "1/C_T = 1/C₁ + 1/C₂",
+              note: "like resistors in parallel!",
+            },
+            {
+              name: "Capacitors in parallel",
+              eq: "C_T = C₁ + C₂ + C₃",
+              note: "like resistors in series!",
+            },
+          ],
+          notes: [
+            "Like charges repel, unlike charges attract",
+            "Charging by induction: charge without contact — no charge is lost",
+            "Capacitor series: SAME CHARGE on each; voltage splits",
+            "Capacitor parallel: SAME VOLTAGE across each; charges add up",
+            "CRITICAL: Capacitor formulas are OPPOSITE to resistor formulas!",
+            "Electric field lines: from + to −, never cross, closer = stronger field",
+          ],
+          tip: "EXAM TRAP: Series capacitors use 1/C formula (NOT direct addition). Parallel: add directly. This confuses everyone!",
+          commonQs: [
+            {
+              q: "Two capacitors 4μF and 12μF are connected in series. Total capacitance is",
+              opts: ["A. 16μF", "B. 48μF", "C. 3μF", "D. 8μF"],
+              ans: 2,
+              exp: "1/C_T = 1/4 + 1/12 = 3/12 + 1/12 = 4/12. C_T = 12/4 = 3μF.",
+            },
+            {
+              q: "Two capacitors 4μF and 12μF are connected in parallel. Total capacitance is",
+              opts: ["A. 3μF", "B. 16μF", "C. 48μF", "D. 8μF"],
+              ans: 1,
+              exp: "C_T = C₁ + C₂ = 4 + 12 = 16μF. In parallel, capacitances add directly.",
+            },
+            {
+              q: "Energy stored in a 10μF capacitor charged to 100V is",
+              opts: ["A. 0.1J", "B. 0.05J", "C. 1000J", "D. 0.01J"],
+              ans: 1,
+              exp: "E = ½CV² = ½ × 10×10⁻⁶ × 100² = ½ × 10⁻⁵ × 10000 = 0.05J.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "When a dielectric is inserted between capacitor plates (disconnected from battery), capacitance",
+              opts: [
+                "A. increases, charge decreases",
+                "B. increases, charge unchanged",
+                "C. decreases, charge unchanged",
+                "D. unchanged, charge increases",
+              ],
+              ans: 1,
+              exp: "C = εᵣC₀, so C increases (εᵣ > 1). Capacitor is disconnected, so charge Q is FIXED. Voltage V = Q/C decreases.",
+            },
+          ],
+          sim: "capacitor",
+        },
+        {
+          day: 13,
+          title: "Current, Ohm's Law & Circuits",
+          tag: "elec",
+          formulas: [
+            {
+              name: "Ohm's Law",
+              eq: "V = IR",
+              note: "at constant temperature",
+            },
+            {
+              name: "Terminal voltage",
+              eq: "V = ε − Ir",
+              note: "ε=EMF, r=internal resistance",
+            },
+            {
+              name: "Series resistors",
+              eq: "R_T = R₁ + R₂ + R₃",
+              note: "same current through all",
+            },
+            {
+              name: "Parallel resistors",
+              eq: "1/R_T = 1/R₁ + 1/R₂",
+              note: "same voltage across all",
+            },
+            {
+              name: "Resistivity",
+              eq: "R = ρL/A",
+              note: "ρ = resistivity (Ω·m)",
+            },
+            {
+              name: "Wheatstone bridge",
+              eq: "P/Q = R/S",
+              note: "balanced: no galvanometer current",
+            },
+            {
+              name: "Metre bridge",
+              eq: "L₁/L₂ = R₁/R₂",
+              note: "sliding wire balance",
+            },
+          ],
+          notes: [
+            "Ohm's law holds only at constant temperature — non-ohmic conductors (diodes, thermistors) don't obey it",
+            "Series circuit: same current throughout, voltage divides",
+            "Parallel circuit: same voltage across, current divides",
+            "Lost volts = Ir (voltage drop across internal resistance)",
+            "Kirchhoff's Current Law: Σcurrents IN = Σcurrents OUT at any junction",
+            "Kirchhoff's Voltage Law: Σ EMF = Σ IR drops around any closed loop",
+          ],
+          tip: "Lost volts = Ir. Heavy load → more current → lower terminal voltage. This is why batteries die under load.",
+          commonQs: [
+            {
+              q: "A cell of EMF 6V and internal resistance 2Ω is connected to a 4Ω resistor. Current through circuit is",
+              opts: ["A. 1A", "B. 2A", "C. 3A", "D. 1.5A"],
+              ans: 0,
+              exp: "I = ε/(R+r) = 6/(4+2) = 6/6 = 1A.",
+            },
+            {
+              q: "Three resistors 2Ω, 3Ω, 6Ω are connected in parallel. Total resistance is",
+              opts: ["A. 11Ω", "B. 1Ω", "C. 2Ω", "D. 3Ω"],
+              ans: 1,
+              exp: "1/R_T = 1/2 + 1/3 + 1/6 = 3/6 + 2/6 + 1/6 = 6/6 = 1. R_T = 1Ω.",
+            },
+            {
+              q: "Ohm's law is NOT obeyed by",
+              opts: [
+                "A. resistor",
+                "B. metallic conductor",
+                "C. diode",
+                "D. copper wire",
+              ],
+              ans: 2,
+              exp: "Diodes are non-ohmic — their V-I graph is not linear. They allow current mainly in one direction.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "In a Wheatstone bridge, P=3Ω, Q=4Ω, R=6Ω. For balance, S equals",
+              opts: ["A. 8Ω", "B. 4.5Ω", "C. 18Ω", "D. 2Ω"],
+              ans: 0,
+              exp: "Balance condition: P/Q = R/S → 3/4 = 6/S → S = 6×4/3 = 8Ω.",
+            },
+          ],
+          sim: "circuit",
+        },
+        {
+          day: 14,
+          title: "Electrical Energy, Power & Electrolysis",
+          tag: "elec",
+          formulas: [
+            {
+              name: "Electrical Power",
+              eq: "P = IV = I²R = V²/R",
+              note: "watts (W)",
+            },
+            {
+              name: "Electrical Energy",
+              eq: "E = Pt = IVt",
+              note: "joules; 1kWh=3.6×10⁶J",
+            },
+            {
+              name: "Faraday's 1st Law",
+              eq: "m = ZIt = ZQ",
+              note: "Z = electrochemical equiv.",
+            },
+            {
+              name: "Faraday's 2nd Law",
+              eq: "m₁/m₂ = E₁/E₂",
+              note: "E = molar mass/valency",
+            },
+            {
+              name: "1 Faraday",
+              eq: "F = 96,500 C/mol",
+              note: "charge per mole of electrons",
+            },
+          ],
+          notes: [
+            "P = IV = I²R = V²/R — three equivalent forms, use the one with knowns",
+            "1 kWh = 3,600,000 J — commercial electricity billing unit",
+            "Electrolysis: ionic substances only. Cations (+) go to cathode (−), anions (−) to anode (+)",
+            "At cathode: reduction (metal deposited). At anode: oxidation",
+            "Electroplating: coat thin layer of metal using electrolysis",
+            "Faraday's 1st Law: mass deposited ∝ charge passed",
+          ],
+          tip: "Know all 3 forms of P=IV=I²R=V²/R. JAMB gives you 2 of V, I, R and asks for power — choose the right form!",
+          commonQs: [
+            {
+              q: "A 100W, 250V bulb. Current through it is",
+              opts: ["A. 0.4A", "B. 25A", "C. 4A", "D. 2.5A"],
+              ans: 0,
+              exp: "P = IV → I = P/V = 100/250 = 0.4A.",
+            },
+            {
+              q: "A 2kW heater runs for 3 hours. Units (kWh) consumed is",
+              opts: ["A. 6kWh", "B. 0.67kWh", "C. 600kWh", "D. 1.5kWh"],
+              ans: 0,
+              exp: "E = P × t = 2kW × 3h = 6kWh.",
+            },
+            {
+              q: "In electrolysis, copper is deposited at the",
+              opts: [
+                "A. anode",
+                "B. cathode",
+                "C. electrolyte",
+                "D. both electrodes",
+              ],
+              ans: 1,
+              exp: "Copper ions (Cu²⁺, cations) migrate to the cathode (−ve electrode) where they gain electrons and are deposited as copper metal.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "0.025g of silver (at mass 108, valency 1) is deposited by a current of 0.5A. Time taken is (F=96500C/mol)",
+              opts: ["A. 44.7s", "B. 4.47s", "C. 447s", "D. 0.45s"],
+              ans: 0,
+              exp: "Z = M/(n×F) = 108/(1×96500) = 1.119×10⁻³ g/C. m=ZIt → t=m/(ZI) = 0.025/(1.119×10⁻³ × 0.5) ≈ 44.7s.",
+            },
+          ],
+          sim: "electrolysis",
+        },
+        {
+          day: 15,
+          title: "Magnetism & Electromagnetic Induction",
+          tag: "elec",
+          formulas: [
+            {
+              name: "Force on conductor",
+              eq: "F = BIL sinθ",
+              note: "B=field strength (T)",
+            },
+            {
+              name: "Force on charge",
+              eq: "F = Bqv sinθ",
+              note: "Lorentz force",
+            },
+            { name: "Faraday's Law", eq: "ε = −NdΦ/dt", note: "induced EMF" },
+            {
+              name: "Lenz's Law",
+              eq: "Induced current opposes change",
+              note: "direction only",
+            },
+            {
+              name: "Motional EMF",
+              eq: "ε = BLv",
+              note: "conductor moving in field",
+            },
+            {
+              name: "Transformer",
+              eq: "V_s/V_p = N_s/N_p = I_p/I_s",
+              note: "ideal transformer",
+            },
+          ],
+          notes: [
+            "Fleming's Left Hand Rule (motor): Force, Current, Field — thumb=force, index=field, middle=current",
+            "Fleming's Right Hand Rule (generator): thumb=motion, index=field, middle=induced current",
+            "Lenz's Law: induced current always opposes the change causing it (conservation of energy)",
+            "Step-up transformer: N_s > N_p → V_s > V_p but I_s < I_p",
+            "Step-down transformer: N_s < N_p → V_s < V_p but I_s > I_p",
+            "Transformer efficiency: P_out/P_in × 100% = (V_s × I_s)/(V_p × I_p) × 100%",
+          ],
+          tip: "Left Hand = Motor (LHM), Right Hand = Generator (RHG). Lenz's Law ensures energy conservation.",
+          commonQs: [
+            {
+              q: "A transformer has 500 primary turns and 50 secondary turns. Primary voltage is 240V. Secondary voltage is",
+              opts: ["A. 2400V", "B. 24V", "C. 120V", "D. 240V"],
+              ans: 1,
+              exp: "V_s/V_p = N_s/N_p → V_s = 240 × (50/500) = 240 × 0.1 = 24V. This is a step-DOWN transformer.",
+            },
+            {
+              q: "The principle of electromagnetic induction is used in",
+              opts: [
+                "A. electric motor",
+                "B. electric bell",
+                "C. generator",
+                "D. transformer only",
+              ],
+              ans: 2,
+              exp: "Generators use electromagnetic induction (changing magnetic flux → induced EMF). Motors use the motor effect (force on current-carrying conductor). Generators AND transformers use induction.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A conductor of length 0.5m moves at 10m/s perpendicular to a 2T magnetic field. Induced EMF is",
+              opts: ["A. 1V", "B. 10V", "C. 0.1V", "D. 4V"],
+              ans: 1,
+              exp: "ε = BLv = 2 × 0.5 × 10 = 10V.",
+            },
+          ],
+          sim: "induction",
+        },
+        {
+          day: 16,
+          title: "AC Circuits & Electronics",
+          tag: "elec",
+          formulas: [
+            {
+              name: "RMS voltage",
+              eq: "V_rms = V₀/√2 ≈ 0.707V₀",
+              note: "sinusoidal waveform",
+            },
+            {
+              name: "Inductive reactance",
+              eq: "X_L = 2πfL = ωL",
+              note: "ohms (Ω)",
+            },
+            {
+              name: "Capacitive reactance",
+              eq: "X_C = 1/(2πfC) = 1/(ωC)",
+              note: "ohms (Ω)",
+            },
+            {
+              name: "Impedance",
+              eq: "Z = √[R² + (X_L − X_C)²]",
+              note: "total AC resistance",
+            },
+            {
+              name: "Resonant frequency",
+              eq: "f₀ = 1/(2π√LC)",
+              note: "X_L = X_C, Z = R only",
+            },
+            {
+              name: "Power factor",
+              eq: "cosφ = R/Z",
+              note: "unity for pure resistor",
+            },
+          ],
+          notes: [
+            "ELI the ICEman: Inductor (L): voltage E Leads current I. Capacitor (C): current I Leads voltage E.",
+            "Pure resistor: current and voltage in phase (φ = 0°)",
+            "At resonance: X_L = X_C, Z = R (minimum), current maximum, φ = 0",
+            "Half-wave rectification: 1 diode | Full-wave: 4 diodes (bridge) or 2 with transformer",
+            "Smoothing: capacitor in parallel reduces ripple in rectified DC",
+            "Transistor: small base current controls larger collector current → amplifier",
+          ],
+          tip: "ELI the ICEman — memorise this! In inductors: voltage leads. In capacitors: current leads.",
+          commonQs: [
+            {
+              q: "Peak voltage of AC mains at 220V (rms) is approximately",
+              opts: ["A. 155V", "B. 220V", "C. 311V", "D. 440V"],
+              ans: 2,
+              exp: "V₀ = V_rms × √2 = 220 × 1.414 ≈ 311V.",
+            },
+            {
+              q: "In an AC circuit with only a capacitor, the current",
+              opts: [
+                "A. lags voltage by 90°",
+                "B. leads voltage by 90°",
+                "C. is in phase with voltage",
+                "D. leads by 45°",
+              ],
+              ans: 1,
+              exp: "In a pure capacitor, current leads voltage by 90°. Remember ICE: I leads E in Capacitor.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A series RLC circuit resonates at 1000Hz. If L=0.025H, value of C is (π²=10)",
+              opts: ["A. 1μF", "B. 10μF", "C. 0.1μF", "D. 100μF"],
+              ans: 0,
+              exp: "f₀=1/(2π√LC). f₀²=1/(4π²LC). C=1/(4π²Lf₀²)=1/(4×10×0.025×10⁶)=1/(10⁶)=1×10⁻⁶F=1μF.",
+            },
+          ],
+          sim: "ac",
+        },
+        {
+          day: 17,
+          title: "Atomic Models & Photoelectric Effect",
+          tag: "mod",
+          formulas: [
+            {
+              name: "Photon energy",
+              eq: "E = hf = hc/λ",
+              note: "h = 6.63×10⁻³⁴ J·s",
+            },
+            {
+              name: "Photoelectric effect",
+              eq: "hf = φ + ½mv²_max",
+              note: "φ = work function",
+            },
+            {
+              name: "Threshold frequency",
+              eq: "f₀ = φ/h",
+              note: "minimum frequency for emission",
+            },
+            {
+              name: "Stopping potential",
+              eq: "eV₀ = ½mv²_max = hf − φ",
+              note: "eV₀ energy",
+            },
+            {
+              name: "de Broglie wavelength",
+              eq: "λ = h/p = h/mv",
+              note: "matter waves",
+            },
+          ],
+          notes: [
+            "Dalton (solid sphere) → Thomson (plum pudding) → Rutherford (nuclear) → Bohr (orbits) → Quantum",
+            "Photoelectric effect: light ejects electrons from metal surface",
+            "Wave theory CANNOT explain: (1) instantaneous emission (2) threshold frequency (3) intensity affects number not energy",
+            "Einstein's photon theory DOES explain all three — won him the Nobel Prize (not relativity!)",
+            "Bohr model: electrons in fixed orbits, emit/absorb photons when jumping between levels",
+            "Hydrogen spectrum: Lyman (UV, n=1), Balmer (visible, n=2), Paschen (IR, n=3)",
+          ],
+          tip: "Photoelectric effect PROVES light has particle nature. Wave theory fails all 3 key observations.",
+          commonQs: [
+            {
+              q: "The photoelectric effect shows that light has",
+              opts: [
+                "A. wave nature",
+                "B. particle (photon) nature",
+                "C. neither",
+                "D. both wave and particle always",
+              ],
+              ans: 1,
+              exp: "Photoelectric effect proves light's particle nature — one photon interacts with one electron. The wave theory cannot explain the threshold frequency or instantaneous emission.",
+            },
+            {
+              q: "Increasing the intensity of light in photoelectric effect increases",
+              opts: [
+                "A. KE of emitted electrons",
+                "B. number of emitted electrons",
+                "C. threshold frequency",
+                "D. work function",
+              ],
+              ans: 1,
+              exp: "Higher intensity = more photons per second = more electrons emitted per second. But each photon has same energy (frequency unchanged), so KE of individual electrons is unchanged.",
+            },
+            {
+              q: "Energy of a photon of frequency 6×10¹⁴ Hz is (h=6.6×10⁻³⁴ Js)",
+              opts: [
+                "A. 3.96×10⁻¹⁹J",
+                "B. 9.09×10⁴⁸J",
+                "C. 6.6×10⁻³⁴J",
+                "D. 1×10⁻²⁰J",
+              ],
+              ans: 0,
+              exp: "E = hf = 6.6×10⁻³⁴ × 6×10¹⁴ = 39.6×10⁻²⁰ = 3.96×10⁻¹⁹ J.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "An electron is accelerated through 100V. Its de Broglie wavelength is (h=6.6×10⁻³⁴, m=9.1×10⁻³¹, e=1.6×10⁻¹⁹)",
+              opts: [
+                "A. 1.23×10⁻¹⁰m",
+                "B. 2.5×10⁻⁹m",
+                "C. 6.6×10⁻³⁴m",
+                "D. 9.1×10⁻³¹m",
+              ],
+              ans: 0,
+              exp: "eV=½mv²→v=√(2eV/m). Then λ=h/mv. λ=h/√(2meV)=6.6×10⁻³⁴/√(2×9.1×10⁻³¹×1.6×10⁻¹⁹×100)≈1.23×10⁻¹⁰m.",
+            },
+          ],
+          sim: "photoelectric",
+        },
+        {
+          day: 18,
+          title: "Radioactivity & Nuclear Physics",
+          tag: "mod",
+          formulas: [
+            {
+              name: "Decay law",
+              eq: "N = N₀e^(−λt)",
+              note: "λ = decay constant (s⁻¹)",
+            },
+            {
+              name: "Half-life",
+              eq: "T½ = ln2/λ = 0.693/λ",
+              note: "time for N to halve",
+            },
+            {
+              name: "After n half-lives",
+              eq: "N = N₀ × (½)ⁿ",
+              note: "QUICK method",
+            },
+            { name: "Activity", eq: "A = λN", note: "becquerels (Bq)" },
+            { name: "Mass-energy", eq: "ΔE = Δmc²", note: "c = 3×10⁸ m/s" },
+            { name: "α decay", eq: "A−4, Z−2", note: "emits ⁴₂He" },
+            { name: "β decay", eq: "A same, Z+1", note: "emits ⁰₋₁e" },
+          ],
+          notes: [
+            "Alpha (α): helium nucleus, +2 charge, least penetrating (stopped by paper/air), most ionising",
+            "Beta (β⁻): fast electron, −1 charge, stopped by mm of aluminium",
+            "Gamma (γ): high energy EM radiation, no charge, stopped by thick lead/concrete",
+            "Radioactive decay is random and spontaneous — unaffected by temperature or pressure",
+            "Nuclear equations must balance: A (mass number) AND Z (atomic number)",
+            "Fission: heavy nucleus splits (U-235) → chain reaction | Fusion: light nuclei combine → stars",
+          ],
+          tip: "After n half-lives: N = N₀ × (½)ⁿ — FASTEST method for JAMB half-life questions!",
+          commonQs: [
+            {
+              q: "A radioactive element has half-life 20 years. Fraction remaining after 60 years is",
+              opts: ["A. ⅛", "B. ¼", "C. ½", "D. 1/16"],
+              ans: 0,
+              exp: "n = 60/20 = 3 half-lives. N/N₀ = (½)³ = 1/8. One-eighth remains.",
+            },
+            {
+              q: "In alpha decay, the atomic number of the parent nucleus",
+              opts: [
+                "A. increases by 2",
+                "B. decreases by 2",
+                "C. decreases by 4",
+                "D. stays the same",
+              ],
+              ans: 1,
+              exp: "Alpha particle is ⁴₂He — carries away 2 protons. So Z decreases by 2. Mass number A decreases by 4.",
+            },
+            {
+              q: "Which radiation has the GREATEST ionising power?",
+              opts: ["A. Gamma", "B. Beta", "C. Alpha", "D. X-rays"],
+              ans: 2,
+              exp: "Alpha particles are most ionising because they are heavy, slow, and doubly charged (+2). Their large charge and low speed maximises interaction with atoms along their path.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "²³⁸₉₂U undergoes alpha decay then beta decay. Resulting nucleus has",
+              opts: [
+                "A. A=234, Z=91",
+                "B. A=234, Z=90",
+                "C. A=238, Z=91",
+                "D. A=234, Z=93",
+              ],
+              ans: 0,
+              exp: "After α: ²³⁴₉₀Th (A−4, Z−2). After β: ²³⁴₉₁Pa (A same, Z+1). Final: A=234, Z=91.",
+            },
+          ],
+          sim: "radioactive",
+        },
+        {
+          day: 19,
+          title: "Electronics — Diodes, Transistors & Logic",
+          tag: "mod",
+          formulas: [
+            {
+              name: "Transistor current",
+              eq: "I_E = I_B + I_C",
+              note: "KCL at junction",
+            },
+            {
+              name: "Current gain",
+              eq: "β = I_C/I_B",
+              note: "hFE, typically 50-300",
+            },
+            {
+              name: "AND gate",
+              eq: "Output = A·B",
+              note: "1 only if both inputs 1",
+            },
+            {
+              name: "OR gate",
+              eq: "Output = A+B",
+              note: "1 if any input is 1",
+            },
+            { name: "NOT gate", eq: "Output = Ā", note: "inverts input" },
+            { name: "NAND gate", eq: "Output = ̄(A·B)", note: "NOT AND" },
+          ],
+          notes: [
+            "p-n junction diode: forward biased → conducts; reverse biased → blocks current",
+            "Half-wave rectifier: 1 diode, only half cycle used",
+            "Full-wave rectifier: 4 diodes (bridge rectifier), both half cycles used",
+            "Smoothing: capacitor in parallel with load — charges during peaks, discharges during troughs",
+            "NPN transistor: base-emitter forward biased, base-collector reverse biased",
+            "Small base current controls large collector current → current amplification",
+            "NAND and NOR gates are universal — can make any logic circuit from them alone",
+          ],
+          tip: "NAND gate = universal gate. Diode: forward biased = conducts. Transistor: small base current controls large collector.",
+          commonQs: [
+            {
+              q: "A transistor has β=100 and base current 0.05mA. Collector current is",
+              opts: ["A. 0.5mA", "B. 5mA", "C. 50mA", "D. 500mA"],
+              ans: 1,
+              exp: "I_C = β × I_B = 100 × 0.05mA = 5mA.",
+            },
+            {
+              q: "Full-wave rectification requires",
+              opts: ["A. 1 diode", "B. 2 diodes", "C. 4 diodes", "D. 3 diodes"],
+              ans: 2,
+              exp: "A bridge rectifier for full-wave rectification uses 4 diodes arranged in a bridge configuration.",
+            },
+            {
+              q: "Which gate produces output 0 only when all inputs are 1?",
+              opts: [
+                "A. AND gate",
+                "B. OR gate",
+                "C. NOR gate",
+                "D. NAND gate",
+              ],
+              ans: 3,
+              exp: "NAND gate: output is 0 only when ALL inputs are 1 (it's the inverse of AND). For any other combination, output is 1.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A NOR gate has inputs A=1, B=0. Output is",
+              opts: ["A. 0", "B. 1", "C. undefined", "D. same as input A"],
+              ans: 0,
+              exp: "NOR = NOT OR. First compute OR: A+B = 1+0 = 1. Then NOT: NOT(1) = 0.",
+            },
+          ],
+          sim: "logic",
+        },
+        {
+          day: 20,
+          title: "EM Spectrum, X-rays & Modern Physics",
+          tag: "mod",
+          formulas: [
+            {
+              name: "Speed of light",
+              eq: "c = 3×10⁸ m/s",
+              note: "all EM waves in vacuum",
+            },
+            {
+              name: "Wave-particle duality",
+              eq: "λ = h/p",
+              note: "de Broglie",
+            },
+            {
+              name: "X-ray production",
+              eq: "eV = hf_max = hc/λ_min",
+              note: "minimum wavelength",
+            },
+            {
+              name: "Binding energy",
+              eq: "E_b = Δm × c²",
+              note: "Δm = mass defect",
+            },
+          ],
+          notes: [
+            "EM spectrum (increasing frequency): Radio → Microwave → IR → Visible → UV → X-ray → Gamma",
+            "ALL EM waves travel at c = 3×10⁸ m/s in vacuum; obey v = fλ",
+            "X-rays: produced by bombarding metal target with high-energy electrons",
+            "Higher accelerating voltage → shorter minimum wavelength (higher energy X-rays)",
+            "Binding energy per nucleon peaks at iron-56 (most stable nucleus)",
+            "Lasers: monochromatic, coherent, collimated light — stimulated emission",
+          ],
+          tip: "EM spectrum order: Radio, Microwave, IR, Visible (ROYGBIV), UV, X-ray, Gamma. Frequency increases left to right.",
+          commonQs: [
+            {
+              q: "Which EM radiation has the highest frequency?",
+              opts: [
+                "A. Radio waves",
+                "B. X-rays",
+                "C. Gamma rays",
+                "D. UV rays",
+              ],
+              ans: 2,
+              exp: "Gamma rays have the highest frequency (and shortest wavelength) in the EM spectrum. Order: Radio → Microwave → IR → Visible → UV → X-ray → Gamma.",
+            },
+            {
+              q: "EM waves differ from sound waves because they",
+              opts: [
+                "A. have higher frequency",
+                "B. can travel through vacuum",
+                "C. travel slower",
+                "D. require medium",
+              ],
+              ans: 1,
+              exp: "EM waves can travel through vacuum at c = 3×10⁸ m/s. Sound waves require a material medium and cannot travel in vacuum.",
+            },
+            {
+              q: "The minimum wavelength of X-rays produced by 50kV electrons is (h=6.6×10⁻³⁴, c=3×10⁸, e=1.6×10⁻¹⁹)",
+              opts: [
+                "A. 2.5×10⁻¹¹m",
+                "B. 2.5×10⁻¹²m",
+                "C. 6.6×10⁻³⁴m",
+                "D. 4.1×10⁻⁸m",
+              ],
+              ans: 0,
+              exp: "λ_min = hc/(eV) = (6.6×10⁻³⁴ × 3×10⁸)/(1.6×10⁻¹⁹ × 50000) = 1.98×10⁻²⁵/8×10⁻¹⁵ = 2.5×10⁻¹¹m.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "The binding energy per nucleon is maximum for",
+              opts: ["A. hydrogen", "B. uranium", "C. iron", "D. helium"],
+              ans: 2,
+              exp: "Iron-56 has the highest binding energy per nucleon (~8.8 MeV/nucleon), making it the most stable nucleus. Elements on either side can release energy via fission (heavy) or fusion (light).",
+            },
+          ],
+          sim: "spectrum",
+        },
+        {
+          day: 21,
+          title: "Energy Sources & Environmental Physics",
+          tag: "mod",
+          formulas: [
+            {
+              name: "Efficiency",
+              eq: "η = useful output / total input × 100%",
+              note: "always <100%",
+            },
+            {
+              name: "Solar power",
+              eq: "P = I × A × η",
+              note: "I = solar intensity (W/m²)",
+            },
+          ],
+          notes: [
+            "Renewable sources: solar, wind, hydroelectric, geothermal, tidal, biomass",
+            "Non-renewable: fossil fuels (coal, oil, gas), nuclear (fission uses limited uranium)",
+            "Solar cells (photovoltaic): convert light directly to electricity using photoelectric effect",
+            "Greenhouse effect: CO₂, CH₄ absorb IR radiation from Earth → global warming",
+            "Nuclear energy: high energy density, no CO₂, but radioactive waste problems",
+            "Fossil fuels: CO₂, SO₂ emissions → acid rain, greenhouse gases",
+          ],
+          tip: "Renewable vs non-renewable is a very common JAMB topic. Nuclear is NOT renewable (uranium is finite).",
+          commonQs: [
+            {
+              q: "Which energy source is renewable?",
+              opts: ["A. Coal", "B. Natural gas", "C. Wind", "D. Nuclear"],
+              ans: 2,
+              exp: "Wind is renewable — it's continuously replenished by nature. Coal and natural gas are fossil fuels (non-renewable). Nuclear uses uranium which is a finite resource.",
+            },
+            {
+              q: "The greenhouse effect occurs because",
+              opts: [
+                "A. ozone absorbs UV",
+                "B. CO₂ absorbs IR radiation from Earth",
+                "C. factories produce heat",
+                "D. the sun gets hotter",
+              ],
+              ans: 1,
+              exp: "CO₂ and other greenhouse gases absorb infrared radiation emitted by Earth's surface, trapping heat in the atmosphere.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "The main disadvantage of nuclear power compared to fossil fuels is",
+              opts: [
+                "A. lower energy output",
+                "B. CO₂ emissions",
+                "C. radioactive waste disposal",
+                "D. higher cost of fuel",
+              ],
+              ans: 2,
+              exp: "Nuclear power produces no CO₂ but generates radioactive waste that remains dangerous for thousands of years, requiring careful long-term storage.",
+            },
+          ],
+          sim: "energy2",
+        },
+        {
+          day: 22,
+          title: "Motion in Fluid & Viscosity",
+          tag: "thermo",
+          formulas: [
+            {
+              name: "Stoke's Law",
+              eq: "F = 6πηrv",
+              note: "viscous drag on sphere",
+            },
+            {
+              name: "Terminal velocity",
+              eq: "mg − U = 6πηrv_t",
+              note: "at terminal: no acceleration",
+            },
+            {
+              name: "Bernoulli's equation",
+              eq: "P + ½ρv² + ρgh = constant",
+              note: "along streamline",
+            },
+            {
+              name: "Equation of continuity",
+              eq: "A₁v₁ = A₂v₂",
+              note: "incompressible flow",
+            },
+          ],
+          notes: [
+            "Terminal velocity: gravitational force = drag force, no net force, constant velocity",
+            "Viscosity: measure of fluid's internal resistance to flow",
+            "More viscous fluid: slower falling object, higher drag at same speed",
+            "Bernoulli: higher velocity → lower pressure (explains aerofoil lift, carburetor)",
+            "Equation of continuity: fluid speed increases where cross-sectional area decreases",
+          ],
+          tip: "Terminal velocity: heavier or larger-radius objects have higher terminal velocity. Raindrops reach terminal vel.",
+          commonQs: [
+            {
+              q: "A ball bearing reaches terminal velocity in a viscous fluid when",
+              opts: [
+                "A. acceleration is maximum",
+                "B. weight equals upthrust",
+                "C. weight equals viscous drag + upthrust",
+                "D. weight is zero",
+              ],
+              ans: 2,
+              exp: "At terminal velocity: weight = upthrust + viscous drag. Net force = 0, acceleration = 0.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "Water flows through a pipe of diameter 4cm at 2m/s. Speed in a section of diameter 2cm is",
+              opts: ["A. 1m/s", "B. 4m/s", "C. 8m/s", "D. 0.5m/s"],
+              ans: 2,
+              exp: "Continuity: A₁v₁ = A₂v₂. Areas: π(0.02)²×2 = π(0.01)²×v₂. 0.0004×2 = 0.0001×v₂. v₂ = 0.0008/0.0001 = 8m/s.",
+            },
+          ],
+          sim: "fluid2",
+        },
+        {
+          day: 23,
+          title: "Optical Instruments & Dispersion",
+          tag: "thermo",
+          formulas: [
+            {
+              name: "Simple microscope mag.",
+              eq: "M = 1 + D/f",
+              note: "D = near point = 25cm",
+            },
+            {
+              name: "Telescope mag.",
+              eq: "M = f_o / f_e",
+              note: "for distant objects",
+            },
+            {
+              name: "Prism minimum dev.",
+              eq: "n = sin[(A+D_m)/2] / sin[A/2]",
+              note: "A = apex angle",
+            },
+          ],
+          notes: [
+            "Compound microscope: short focal-length objective (near object) + eyepiece (magnifier)",
+            "Astronomical telescope: large objective lens (light gathering) + eyepiece",
+            "Dispersion: white light splits into spectrum because different colours have different speeds in glass",
+            "ROYGBIV: Red least deviated (lowest n), Violet most deviated (highest n)",
+            "Myopia (short sight): image forms in front of retina → diverging (concave) lens corrects",
+            "Hypermetropia (long sight): image forms behind retina → converging (convex) lens corrects",
+          ],
+          tip: "Red is least deviated (lowest n, longest wavelength). Violet is most deviated (highest n, shortest wavelength).",
+          commonQs: [
+            {
+              q: "A person cannot see clearly beyond 2m. The lens needed is",
+              opts: [
+                "A. convex lens of f=2m",
+                "B. concave lens of f=2m",
+                "C. convex lens of f=1m",
+                "D. no lens",
+              ],
+              ans: 1,
+              exp: "This person is myopic (short-sighted). They need a diverging (concave) lens. The lens should have focal length equal to the far point = 2m.",
+            },
+            {
+              q: "In the visible spectrum, which color has the lowest refractive index in glass?",
+              opts: ["A. Violet", "B. Blue", "C. Green", "D. Red"],
+              ans: 3,
+              exp: "Red light has the longest wavelength and lowest frequency, travels fastest in glass, has lowest refractive index, and is least deviated by a prism.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "An astronomical telescope has objective focal length 100cm and eyepiece 5cm. Angular magnification is",
+              opts: ["A. 95", "B. 105", "C. 20", "D. 500"],
+              ans: 2,
+              exp: "M = f_o/f_e = 100/5 = 20.",
+            },
+          ],
+          sim: "lenses",
+        },
+        {
+          day: 24,
+          title: "Full Revision — Common JAMB Traps",
+          tag: "mod",
+          formulas: [
+            {
+              name: "Quick SUVAT",
+              eq: "v²=u²+2as | s=(u+v)t/2",
+              note: "most useful pair",
+            },
+            {
+              name: "All gas laws",
+              eq: "P₁V₁/T₁ = P₂V₂/T₂",
+              note: "combined, T in Kelvin!",
+            },
+            {
+              name: "Power (all forms)",
+              eq: "P=IV=I²R=V²/R",
+              note: "pick by known values",
+            },
+          ],
+          notes: [
+            "TOP JAMB TRAPS: (1) Adding vector magnitudes (2) Using °C in gas laws (3) Confusing capacitor/resistor formulas",
+            "TRAP 4: Forgetting internal resistance (EMF ≠ terminal voltage under load)",
+            "TRAP 5: Sign convention mixing in optics (stay consistent!)",
+            "TRAP 6: Assuming projectile has horizontal acceleration (it doesn't!)",
+            "TRAP 7: Confusing mass (constant, universal) with weight (varies with g)",
+            "TRAP 8: Alpha most ionising ≠ most penetrating. Alpha: most ionising, LEAST penetrating.",
+          ],
+          tip: "Review your formula sheet. Look at the checklist. Do 20 past questions. Sleep early. You are READY.",
+          commonQs: [
+            {
+              q: "Mass and weight are different because",
+              opts: [
+                "A. mass is measured in Newtons",
+                "B. weight varies with gravitational field, mass does not",
+                "C. mass varies with location",
+                "D. they are actually the same",
+              ],
+              ans: 1,
+              exp: "Mass is the amount of matter (kg), constant everywhere. Weight = mg, varies with gravitational field strength g. On the Moon, your mass is the same but weight is 1/6 of Earth value.",
+            },
+            {
+              q: "Which of the following quantities is conserved in ALL types of collisions?",
+              opts: [
+                "A. Kinetic energy",
+                "B. Total momentum",
+                "C. Velocity",
+                "D. Mechanical energy",
+              ],
+              ans: 1,
+              exp: "Momentum is always conserved in collisions (no external forces). KE is only conserved in elastic collisions. Velocity and mechanical energy are NOT necessarily conserved.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "A body weighs 600N on Earth (g=10m/s²). Weight on Moon (g=1.6m/s²) is",
+              opts: ["A. 600N", "B. 96N", "C. 60N", "D. 375N"],
+              ans: 1,
+              exp: "Mass = W/g = 600/10 = 60kg. Weight on Moon = mg = 60 × 1.6 = 96N. Mass is unchanged.",
+            },
+          ],
+          sim: "revision",
+        },
+        {
+          day: 25,
+          title: "Final Day — Exam Confidence",
+          tag: "mod",
+          formulas: [
+            {
+              name: "Nuclear decay",
+              eq: "N=N₀(½)ⁿ | T½=0.693/λ",
+              note: "n = number of half-lives",
+            },
+            {
+              name: "Photon",
+              eq: "E=hf=hc/λ | f₀=φ/h",
+              note: "photoelectric threshold",
+            },
+            {
+              name: "Transformer",
+              eq: "V_s/V_p = N_s/N_p",
+              note: "step up/down",
+            },
+          ],
+          notes: [
+            "✅ Skim formula sheet ONCE — recognition only, zero new learning",
+            "✅ Review 2 past-paper questions per major topic",
+            "✅ Prepare exam kit: calculator, pens/pencils, geometric set, ID, admission slip",
+            "✅ Sleep 7-8 hours — brain consolidates memory during sleep",
+            "✅ Eat a proper meal before exam — glucose fuels cognitive function",
+            "❌ DON'T attempt new topics in final 24 hours",
+            "❌ DON'T study past midnight — fatigue hurts more than one extra chapter helps",
+          ],
+          tip: "You have done the work. Every formula is in you. Physics is understanding WHY, not just memorising. GO SHOW THEM. 🏆",
+          commonQs: [
+            {
+              q: "The SI unit of electric charge is",
+              opts: ["A. ampere", "B. volt", "C. coulomb", "D. farad"],
+              ans: 2,
+              exp: "The SI unit of electric charge is the coulomb (C). Current (ampere) is charge per unit time. 1A = 1C/s.",
+            },
+            {
+              q: "Which property is common to all electromagnetic waves?",
+              opts: [
+                "A. same wavelength",
+                "B. travel at c=3×10⁸m/s in vacuum",
+                "C. same frequency",
+                "D. require medium",
+              ],
+              ans: 1,
+              exp: "All EM waves travel at c = 3×10⁸ m/s in vacuum. They have different wavelengths and frequencies, and don't require a medium.",
+            },
+          ],
+          rareQs: [
+            {
+              q: "The work function of a metal is 2eV. Maximum KE of photoelectrons when irradiated with 5eV photons is",
+              opts: ["A. 2eV", "B. 5eV", "C. 3eV", "D. 7eV"],
+              ans: 2,
+              exp: "KE_max = hf − φ = 5eV − 2eV = 3eV.",
+            },
+          ],
+          sim: "final",
+        },
+      ];
+
+      // All JAMB questions bank
+      const QUESTION_BANK = [];
+      TOPICS.forEach((t) => {
+        t.commonQs.forEach((q) =>
+          QUESTION_BANK.push({
+            ...q,
+            topic: t.title,
+            year: "JAMB",
+            diff: "medium",
+          }),
+        );
+        t.rareQs.forEach((q) =>
+          QUESTION_BANK.push({
+            ...q,
+            topic: t.title,
+            year: "JAMB (Rare)",
+            diff: "hard",
+          }),
+        );
+      });
+      // Add extra historical JAMB questions
+      const EXTRA_QS = [
+        {
+          q: "A 60W lamp is used for 12 hours. The cost at ₦20 per kWh is",
+          opts: ["A. ₦14.40", "B. ₦1.44", "C. ₦0.144", "D. ₦144"],
+          ans: 0,
+          exp: "E = 60W × 12h = 720Wh = 0.72kWh. Cost = 0.72 × 20 = ₦14.40.",
+          topic: "Power",
+          year: "2019",
+          diff: "easy",
+        },
+        {
+          q: "Sound travels fastest in",
+          opts: ["A. air", "B. water", "C. vacuum", "D. steel"],
+          ans: 3,
+          exp: "Sound speed: steel (~5000m/s) > water (~1500m/s) > air (~340m/s). Sound cannot travel in vacuum.",
+          topic: "Waves",
+          year: "2018",
+          diff: "easy",
+        },
+        {
+          q: "An object is placed 20cm from a converging lens of focal length 10cm. The image is",
+          opts: [
+            "A. virtual, same size",
+            "B. real, inverted, same size",
+            "C. real, inverted, larger",
+            "D. virtual, erect, smaller",
+          ],
+          ans: 1,
+          exp: "At 2F: u=2f=20cm. Image at 2F on other side: v=20cm. m=v/u=1. Real, inverted, same size.",
+          topic: "Optics",
+          year: "2017",
+          diff: "medium",
+        },
+        {
+          q: "The frequency of a wave doubles. Its wavelength at constant speed",
+          opts: ["A. doubles", "B. halves", "C. stays same", "D. quadruples"],
+          ans: 1,
+          exp: "v=fλ. If v is constant and f doubles, λ must halve to maintain v=fλ.",
+          topic: "Waves",
+          year: "2020",
+          diff: "easy",
+        },
+        {
+          q: "Which law states that pressure applied to a liquid is transmitted equally in all directions?",
+          opts: [
+            "A. Archimedes",
+            "B. Boyle's",
+            "C. Pascal's",
+            "D. Bernoulli's",
+          ],
+          ans: 2,
+          exp: "Pascal's Principle: pressure applied to an enclosed fluid is transmitted undiminished in all directions.",
+          topic: "Fluids",
+          year: "2016",
+          diff: "easy",
+        },
+        {
+          q: "The half-life of a radioactive substance is 5 years. After 15 years, the fraction remaining is",
+          opts: ["A. 1/2", "B. 1/4", "C. 1/8", "D. 1/16"],
+          ans: 2,
+          exp: "n = 15/5 = 3 half-lives. Fraction = (½)³ = 1/8.",
+          topic: "Radioactivity",
+          year: "2021",
+          diff: "easy",
+        },
+        {
+          q: "Which of the following is an example of forced vibration?",
+          opts: [
+            "A. simple pendulum",
+            "B. guitar string",
+            "C. tuning fork causing another to vibrate",
+            "D. water waves",
+          ],
+          ans: 2,
+          exp: "Forced vibration: an object is made to vibrate at the frequency of a driving source. A tuning fork causing another nearby fork to vibrate (resonance) is forced vibration.",
+          topic: "Waves",
+          year: "2015",
+          diff: "medium",
+        },
+        {
+          q: "Thermocouple thermometers work on the principle that",
+          opts: [
+            "A. resistance changes with temperature",
+            "B. EMF is generated at a junction of two different metals at different temperatures",
+            "C. gas volume changes",
+            "D. liquid expands",
+          ],
+          ans: 1,
+          exp: "Thermocouple: two different metals joined at both ends. When junctions are at different temperatures, a small EMF (Seebeck effect) is generated.",
+          topic: "Temperature",
+          year: "2019",
+          diff: "hard",
+        },
+        {
+          q: "Which particles make up the nucleus?",
+          opts: [
+            "A. electrons and neutrons",
+            "B. protons and electrons",
+            "C. protons and neutrons",
+            "D. neutrons only",
+          ],
+          ans: 2,
+          exp: "The nucleus contains protons (positive charge) and neutrons (neutral). Electrons orbit the nucleus in shells.",
+          topic: "Atomic Physics",
+          year: "2014",
+          diff: "easy",
+        },
+        {
+          q: "A car travelling at 20m/s brakes and stops in 4s. Deceleration is",
+          opts: ["A. 5m/s²", "B. 80m/s²", "C. 16m/s²", "D. 0.2m/s²"],
+          ans: 0,
+          exp: "a = (v-u)/t = (0-20)/4 = -5m/s². Deceleration = 5m/s².",
+          topic: "Motion",
+          year: "2018",
+          diff: "easy",
+        },
+        {
+          q: "The refractive index of glass is 1.5. Speed of light in glass is (c=3×10⁸m/s)",
+          opts: [
+            "A. 4.5×10⁸m/s",
+            "B. 2×10⁸m/s",
+            "C. 1.5×10⁸m/s",
+            "D. 3×10⁸m/s",
+          ],
+          ans: 1,
+          exp: "n = c/v → v = c/n = 3×10⁸/1.5 = 2×10⁸ m/s.",
+          topic: "Optics",
+          year: "2017",
+          diff: "easy",
+        },
+        {
+          q: "An ideal gas is heated at constant volume. Which quantity increases?",
+          opts: ["A. Volume", "B. Pressure", "C. Density", "D. Wavelength"],
+          ans: 1,
+          exp: "At constant volume (Gay-Lussac's/Pressure Law): P ∝ T. Heating → T increases → P increases. Volume and density stay constant.",
+          topic: "Gas Laws",
+          year: "2022",
+          diff: "medium",
+        },
+      ];
+      EXTRA_QS.forEach((q) => QUESTION_BANK.push(q));
+
+      // ========== STATE ==========
+      let completedDays = JSON.parse(
+        localStorage.getItem("jamb-completed") || "[]",
+      );
+      let totalScore = parseInt(localStorage.getItem("jamb-score") || "0");
+      let currentTopic = null;
+      let quizQuestions = [];
+      let quizIdx = 0;
+      let quizScore = 0;
+      let quizTopic = "all";
+
+      // ========== INIT ==========
+      function init() {
+        renderDayGrid();
+        renderFormulaSheet();
+        renderSearch();
+        renderQuizTopicSelect();
+        updateScore();
+        document.getElementById("overall-progress").style.width =
+          (completedDays.length / 25) * 100 + "%";
+      }
+
+      function updateScore() {
+        document.getElementById("total-score").textContent = totalScore;
+      }
+
+      function notify(msg) {
+        const n = document.getElementById("notif");
+        n.textContent = msg;
+        n.classList.add("show");
+        setTimeout(() => n.classList.remove("show"), 2500);
+      }
+
+      // ========== NAVIGATION ==========
+      function showPage(page) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-btn")
+          .forEach((b) => b.classList.remove("active"));
+        const map = {
+          home: "home-page",
+          formula: "formula-page",
+          quiz: "quiz-page",
+          search: "search-page",
+          topic: "topic-page",
+        };
+        document.getElementById(map[page]).classList.add("active");
+        const btnMap = { home: 0, formula: 1, quiz: 2, search: 3 };
+        if (btnMap[page] !== undefined)
+          document
+            .querySelectorAll(".nav-btn")
+            [btnMap[page]].classList.add("active");
+        if (page === "quiz") startQuiz();
+        window.scrollTo(0, 0);
+      }
+
+      // ========== DAY GRID ==========
+      function renderDayGrid() {
+        const grid = document.getElementById("day-grid");
+        grid.innerHTML = TOPICS.map(
+          (t) => `
+    <div class="day-card ${completedDays.includes(t.day) ? "completed" : ""}" onclick="openTopic(${t.day - 1})">
+      <div class="day-num">DAY ${t.day} / 25</div>
+      <div class="day-title">${t.title}</div>
+      <span class="day-tag tag-${t.tag}">${{ mech: "⚙️ Mechanics", thermo: "🌡️ Thermo/Waves", elec: "⚡ Electricity", mod: "⚛️ Modern" }[t.tag]}</span>
+    </div>
+  `,
+        ).join("");
+      }
+
+      // ========== TOPIC PAGE ==========
+      function openTopic(idx) {
+        currentTopic = TOPICS[idx];
+        document.getElementById("topic-day-label").textContent =
+          `DAY ${currentTopic.day} OF 25`;
+        document.getElementById("topic-title").textContent = currentTopic.title;
+
+        const body = document.getElementById("topic-body");
+        body.innerHTML = `
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Key Formulas</div>
+      <div class="formula-grid">
+        ${currentTopic.formulas
+          .map(
+            (f) => `
+          <div class="formula-row">
+            <div>
+              <div class="formula-name">${f.name}</div>
+              <div class="formula-note">${f.note}</div>
+            </div>
+            <div class="formula-eq">${f.eq}</div>
+          </div>
+        `,
+          )
+          .join("")}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--accent2)"></span>Quick Notes</div>
+      <div class="notes-list">
+        ${currentTopic.notes.map((n) => `<div class="note-item">▸ ${n}</div>`).join("")}
+      </div>
+      <div class="tip-box">⭐ EXAM TIP: ${currentTopic.tip}</div>
+    </div>
+    <div class="sim-container">
+      <div class="sim-title">🧪 Interactive Simulation</div>
+      <div id="sim-area">${buildSim(currentTopic.sim, currentTopic.day)}</div>
+    </div>
+    <div class="questions-section card">
+      <div class="card-title"><span class="dot" style="background:var(--accent4)"></span>JAMB Practice Questions</div>
+      <div class="q-tabs">
+        <button class="q-tab active" onclick="switchQTab(this,'common-qs')">Common Questions</button>
+        <button class="q-tab" onclick="switchQTab(this,'rare-qs')">Uncommon/Tricky</button>
+      </div>
+      <div id="common-qs">
+        ${currentTopic.commonQs.map((q, i) => renderQuestionCard(q, `common-${idx}-${i}`, "common")).join("")}
+      </div>
+      <div id="rare-qs" style="display:none">
+        ${currentTopic.rareQs.map((q, i) => renderQuestionCard(q, `rare-${idx}-${i}`, "rare")).join("")}
+      </div>
+    </div>
+  `;
+        showPage("topic");
+        setTimeout(() => initSim(currentTopic.sim, currentTopic.day), 100);
+      }
+
+      function switchQTab(btn, id) {
+        document
+          .querySelectorAll(".q-tab")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        ["common-qs", "rare-qs"].forEach((id2) => {
+          document.getElementById(id2).style.display =
+            id2 === id ? "block" : "none";
+        });
+      }
+
+      function renderQuestionCard(q, uid, type) {
+        return `
+    <div class="question-card">
+      <div class="q-label ${type}-label">${type === "common" ? "📋 Common JAMB" : "🔥 Tricky/Uncommon"}</div>
+      <div class="question-text">${q.q}</div>
+      <div class="options">
+        ${q.opts
+          .map(
+            (o, i) => `
+          <button class="option-btn" onclick="answerQ(this, ${i}, ${q.ans}, '${uid}', '${q.exp.replace(/'/g, "\\'")}')">
+            ${o}
+          </button>
+        `,
+          )
+          .join("")}
+      </div>
+      <div class="explanation" id="exp-${uid}">💡 ${q.exp}</div>
+    </div>
+  `;
+      }
+
+      function answerQ(btn, selected, correct, uid, exp) {
+        const parent = btn.closest(".options");
+        const expEl = document.getElementById("exp-" + uid);
+        if (parent.querySelector(".correct, .wrong")) return;
+        const btns = parent.querySelectorAll(".option-btn");
+        btns.forEach((b, i) => {
+          b.disabled = true;
+          if (i === correct) b.classList.add("correct");
+          else if (i === selected) b.classList.add("wrong");
+        });
+        expEl.classList.add("show");
+        if (selected === correct) {
+          totalScore += 4;
+          localStorage.setItem("jamb-score", totalScore);
+          updateScore();
+          notify("+4 pts! Correct! 🎉");
+        } else {
+          notify("Wrong! Check explanation ↓");
+        }
+      }
+
+      function markDayComplete() {
+        if (!completedDays.includes(currentTopic.day)) {
+          completedDays.push(currentTopic.day);
+          localStorage.setItem("jamb-completed", JSON.stringify(completedDays));
+          totalScore += 10;
+          localStorage.setItem("jamb-score", totalScore);
+          updateScore();
+          notify(`Day ${currentTopic.day} Complete! +10 pts 🏆`);
+          renderDayGrid();
+          document.getElementById("overall-progress").style.width =
+            (completedDays.length / 25) * 100 + "%";
+        }
+      }
+
+      // ========== SIMULATIONS ==========
+      function buildSim(type, day) {
+        const sims = {
+          vectors: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="resetVectors()">Reset</button>
+        <span class="sim-info">Drag the arrowheads to change vector A and B. See resultant R in yellow!</span>
+      </div>`,
+          projectile: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="launchProjectile()">🚀 Launch</button>
+        <button class="sim-btn" onclick="resetProjectile()">Reset</button>
+      </div>
+      <div class="slider-row"><label>Angle (θ°)</label><input type="range" id="angle-slider" min="10" max="80" value="45" oninput="document.getElementById('angle-val').textContent=this.value+'°'"><span class="slider-val" id="angle-val">45°</span></div>
+      <div class="slider-row"><label>Speed (m/s)</label><input type="range" id="speed-slider" min="10" max="50" value="30" oninput="document.getElementById('speed-val').textContent=this.value+'m/s'"><span class="slider-val" id="speed-val">30m/s</span></div>
+      <div class="sim-info" id="proj-info">Set angle and speed then launch!</div>`,
+          collision: `<canvas id="sim-canvas" width="600" height="200" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="startCollision()">▶ Collide</button>
+        <button class="sim-btn" onclick="resetCollision()">Reset</button>
+      </div>
+      <div class="slider-row"><label>Mass A (kg)</label><input type="range" id="massA" min="1" max="10" value="3" oninput="updateCollisionUI()"><span class="slider-val" id="massA-val">3kg</span></div>
+      <div class="slider-row"><label>Mass B (kg)</label><input type="range" id="massB" min="1" max="10" value="5" oninput="updateCollisionUI()"><span class="slider-val" id="massB-val">5kg</span></div>
+      <div class="sim-info" id="coll-info">Watch momentum conservation in action!</div>`,
+          pendulum: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="togglePendulum()">⏸ Pause</button>
+      </div>
+      <div class="slider-row"><label>Length (m)</label><input type="range" id="pend-len" min="0.1" max="2" step="0.1" value="1" oninput="updatePendInfo()"><span class="slider-val" id="pend-val">L=1m</span></div>
+      <div class="sim-info" id="pend-info">T = 2π√(L/g) = 2.00s | Period DOES NOT depend on mass or amplitude (small angles)!</div>`,
+          gas: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="heatGas()">🔥 Heat</button>
+        <button class="sim-btn" onclick="coolGas()">❄️ Cool</button>
+        <button class="sim-btn" onclick="resetGas()">Reset</button>
+      </div>
+      <div class="sim-info" id="gas-info">PV=nRT: See how temperature affects gas particle speed!</div>`,
+          circuit: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="toggleCircuit()">⚡ Toggle</button>
+      </div>
+      <div class="slider-row"><label>Voltage (V)</label><input type="range" id="volt-slider" min="1" max="12" value="6" oninput="updateCircuitInfo()"><span class="slider-val" id="volt-val">6V</span></div>
+      <div class="sim-info" id="circuit-info">I = V/R. Adjust voltage to see current change!</div>`,
+          waves: `<canvas id="sim-canvas" width="600" height="250" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="toggleWave()">⏸ Pause</button>
+      </div>
+      <div class="slider-row"><label>Frequency (Hz)</label><input type="range" id="freq-slider" min="1" max="10" value="3" oninput="updateWaveInfo()"><span class="slider-val" id="freq-val">3 Hz</span></div>
+      <div class="slider-row"><label>Amplitude</label><input type="range" id="amp-slider" min="10" max="60" value="30" oninput="updateWaveInfo()"><span class="slider-val" id="amp-val">30</span></div>
+      <div class="sim-info" id="wave-info">v = fλ | Higher frequency = shorter wavelength at same speed</div>`,
+          optics: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls">
+        <button class="sim-btn primary" onclick="switchLens('convex')">Convex Lens</button>
+        <button class="sim-btn" onclick="switchLens('concave')">Concave Lens</button>
+        <button class="sim-btn" onclick="switchLens('mirror')">Concave Mirror</button>
+      </div>
+      <div class="slider-row"><label>Object distance</label><input type="range" id="obj-dist" min="30" max="250" value="150" oninput="redrawOptics()"><span class="slider-val" id="obj-dist-val">150</span></div>
+      <div class="sim-info" id="optics-info">Drag slider to move object. Watch image form!</div>`,
+        };
+        return (
+          sims[type] ||
+          `<div style="padding:20px;text-align:center;color:var(--muted)">🧪 Interactive simulation for ${type}<br><small>Watch this topic's concepts come alive!</small></div>`
+        );
+      }
+
+      // Simulation variables
+      let simAnim = null;
+      let simState = {};
+
+      function initSim(type, day) {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        cancelAnimationFrame(simAnim);
+        simState = {};
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width,
+          H = canvas.height;
+
+        if (type === "vectors") initVectorSim(canvas, ctx, W, H);
+        else if (type === "projectile") initProjectileSim(canvas, ctx, W, H);
+        else if (type === "collision") initCollisionSim(canvas, ctx, W, H);
+        else if (type === "pendulum") initPendulumSim(canvas, ctx, W, H);
+        else if (type === "gas") initGasSim(canvas, ctx, W, H);
+        else if (type === "circuit") initCircuitSim(canvas, ctx, W, H);
+        else if (type === "waves") initWaveSim(canvas, ctx, W, H);
+        else if (type === "optics") initOpticsSim(canvas, ctx, W, H);
+        else drawDefaultSim(ctx, W, H, type);
+      }
+
+      function drawDefaultSim(ctx, W, H, type) {
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#00d4ff";
+        ctx.font = "bold 18px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "🧪 " + type.toUpperCase() + " SIMULATION",
+          W / 2,
+          H / 2 - 20,
+        );
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "14px Outfit,sans-serif";
+        ctx.fillText("Interactive physics visualization", W / 2, H / 2 + 10);
+      }
+
+      // VECTOR SIMULATION
+      function initVectorSim(canvas, ctx, W, H) {
+        simState.vA = { x: 120, y: 50 };
+        simState.vB = { x: 80, y: -80 };
+        simState.origin = { x: W / 3, y: H / 2 };
+        simState.dragging = null;
+
+        function draw() {
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          const { vA, vB, origin } = simState;
+          const R = { x: vA.x + vB.x, y: vA.y + vB.y };
+          // Grid
+          ctx.strokeStyle = "rgba(26,42,74,0.5)";
+          ctx.lineWidth = 1;
+          for (let x = 0; x < W; x += 40) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, H);
+            ctx.stroke();
+          }
+          for (let y = 0; y < H; y += 40) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(W, y);
+            ctx.stroke();
+          }
+          // Draw vectors
+          drawArrow(
+            ctx,
+            origin,
+            { x: origin.x + vA.x, y: origin.y + vA.y },
+            "#00d4ff",
+            "A",
+          );
+          drawArrow(
+            ctx,
+            { x: origin.x + vA.x, y: origin.y + vA.y },
+            { x: origin.x + vA.x + vB.x, y: origin.y + vA.y + vB.y },
+            "#ff6b35",
+            "B",
+          );
+          drawArrow(
+            ctx,
+            origin,
+            { x: origin.x + R.x, y: origin.y + R.y },
+            "#ffd700",
+            "R",
+          );
+          // Labels
+          const mag = (v) => Math.round(Math.sqrt(v.x * v.x + v.y * v.y));
+          ctx.fillStyle = "#5a7090";
+          ctx.font = "12px Space Mono,monospace";
+          ctx.textAlign = "left";
+          ctx.fillText(
+            `|A|=${mag(vA)} | |B|=${mag(vB)} | |R|=${mag(R)}`,
+            12,
+            H - 12,
+          );
+          ctx.fillText("Drag arrowheads! Triangle rule: tip-to-tail", 12, 20);
+        }
+        draw();
+
+        canvas.onmousedown = (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const mx = (e.clientX - rect.left) * (W / rect.width);
+          const my = (e.clientY - rect.top) * (H / rect.height);
+          const { vA, vB, origin } = simState;
+          const tipA = { x: origin.x + vA.x, y: origin.y + vA.y };
+          const tipR = { x: origin.x + vA.x + vB.x, y: origin.y + vA.y + vB.y };
+          if (dist(mx, my, tipA.x, tipA.y) < 20) simState.dragging = "A";
+          else if (dist(mx, my, tipR.x, tipR.y) < 20) simState.dragging = "B";
+        };
+        canvas.onmousemove = (e) => {
+          if (!simState.dragging) return;
+          const rect = canvas.getBoundingClientRect();
+          const mx = (e.clientX - rect.left) * (W / rect.width);
+          const my = (e.clientY - rect.top) * (H / rect.height);
+          const { origin, vA } = simState;
+          if (simState.dragging === "A")
+            simState.vA = { x: mx - origin.x, y: my - origin.y };
+          else
+            simState.vB = {
+              x: mx - (origin.x + vA.x),
+              y: my - (origin.y + vA.y),
+            };
+          draw();
+        };
+        canvas.onmouseup = () => (simState.dragging = null);
+        canvas.ontouchstart = (e) => {
+          e.preventDefault();
+          const t = e.touches[0];
+          canvas.onmousedown({ clientX: t.clientX, clientY: t.clientY });
+        };
+        canvas.ontouchmove = (e) => {
+          e.preventDefault();
+          const t = e.touches[0];
+          canvas.onmousemove({ clientX: t.clientX, clientY: t.clientY });
+        };
+        canvas.ontouchend = () => (simState.dragging = null);
+      }
+      window.resetVectors = () => {
+        const canvas = document.getElementById("sim-canvas");
+        if (canvas)
+          initVectorSim(
+            canvas,
+            canvas.getContext("2d"),
+            canvas.width,
+            canvas.height,
+          );
+      };
+
+      // PROJECTILE SIMULATION
+      function initProjectileSim(canvas, ctx, W, H) {
+        simState.proj = null;
+        simState.running = false;
+        drawProjectileStatic(ctx, W, H);
+      }
+      function drawProjectileStatic(ctx, W, H) {
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = "#1a2a4a";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < W; x += 50) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, H);
+          ctx.stroke();
+        }
+        for (let y = 0; y < H; y += 50) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
+        }
+        ctx.strokeStyle = "#5a7090";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, H - 30);
+        ctx.lineTo(W, H - 30);
+        ctx.stroke();
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Set angle & speed, then click Launch!", W / 2, H / 2);
+      }
+      window.launchProjectile = () => {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width,
+          H = canvas.height;
+        const angle =
+          (parseInt(document.getElementById("angle-slider").value) * Math.PI) /
+          180;
+        const speed = parseInt(document.getElementById("speed-slider").value);
+        const g = 10;
+        const scale = 3;
+        const x0 = 30,
+          y0 = H - 30;
+        const vx0 = speed * Math.cos(angle);
+        const vy0 = speed * Math.sin(angle);
+        const T = (2 * vy0) / g;
+        const R = vx0 * T;
+        const Hmax = (vy0 * vy0) / (2 * g);
+        document.getElementById("proj-info").textContent =
+          `Range: ${R.toFixed(1)}m | Max Height: ${Hmax.toFixed(1)}m | Time: ${T.toFixed(2)}s`;
+        let trail = [];
+        let t = 0;
+        cancelAnimationFrame(simAnim);
+        function animate() {
+          const x = x0 + vx0 * t * scale;
+          const y = y0 - (vy0 * t - 0.5 * g * t * t) * scale;
+          if (x > W || y > H || t > T + 0.5) {
+            cancelAnimationFrame(simAnim);
+            return;
+          }
+          trail.push({ x, y });
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          // Grid
+          ctx.strokeStyle = "#1a2a4a";
+          ctx.lineWidth = 1;
+          for (let gx = 0; gx < W; gx += 50) {
+            ctx.beginPath();
+            ctx.moveTo(gx, 0);
+            ctx.lineTo(gx, H);
+            ctx.stroke();
+          }
+          for (let gy = 0; gy < H; gy += 50) {
+            ctx.beginPath();
+            ctx.moveTo(0, gy);
+            ctx.lineTo(W, gy);
+            ctx.stroke();
+          }
+          ctx.strokeStyle = "#5a7090";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, H - 30);
+          ctx.lineTo(W, H - 30);
+          ctx.stroke();
+          // Trail
+          ctx.strokeStyle = "rgba(0,212,255,0.3)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          trail.forEach((p, i) =>
+            i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y),
+          );
+          ctx.stroke();
+          // Velocity vectors
+          const vx = vx0 * scale * 0.5;
+          const vy = -(vy0 - g * t) * scale * 0.5;
+          drawArrow(
+            ctx,
+            { x, y },
+            { x: x + vx, y: y },
+            { x: 0, y: 0 },
+            "rgba(0,212,255,0.8)",
+            "vₓ",
+          );
+          drawArrow(
+            ctx,
+            { x, y },
+            { x, y: y + vy },
+            { x: 0, y: 0 },
+            "rgba(255,107,53,0.8)",
+            "vy",
+          );
+          // Ball
+          ctx.fillStyle = "#ffd700";
+          ctx.beginPath();
+          ctx.arc(x, y, 8, 0, Math.PI * 2);
+          ctx.fill();
+          // Angle arc at launch
+          ctx.strokeStyle = "rgba(255,215,0,0.5)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x0, y0, 25, -angle - 0.05, 0.05);
+          ctx.stroke();
+          ctx.fillStyle = "#ffd700";
+          ctx.font = "11px monospace";
+          ctx.fillText(
+            Math.round((angle * 180) / Math.PI) + "°",
+            x0 + 30,
+            y0 - 8,
+          );
+          t += 0.04;
+          simAnim = requestAnimationFrame(animate);
+        }
+        animate();
+      };
+      window.resetProjectile = () => {
+        cancelAnimationFrame(simAnim);
+        const c = document.getElementById("sim-canvas");
+        if (c) drawProjectileStatic(c.getContext("2d"), c.width, c.height);
+      };
+
+      // COLLISION SIMULATION
+      function initCollisionSim(canvas, ctx, W, H) {
+        simState.coll = { running: false, t: 0 };
+        drawCollision(ctx, W, H, false);
+      }
+      function updateCollisionUI() {
+        const mA = document.getElementById("massA").value;
+        const mB = document.getElementById("massB").value;
+        document.getElementById("massA-val").textContent = mA + "kg";
+        document.getElementById("massB-val").textContent = mB + "kg";
+        const canvas = document.getElementById("sim-canvas");
+        if (canvas)
+          drawCollision(
+            canvas.getContext("2d"),
+            canvas.width,
+            canvas.height,
+            false,
+          );
+      }
+      window.updateCollisionUI = updateCollisionUI;
+      function drawCollision(ctx, W, H, running, xA = 80, xB = null) {
+        const mA = parseFloat(document.getElementById("massA")?.value || 3);
+        const mB = parseFloat(document.getElementById("massB")?.value || 5);
+        if (xB === null) xB = W - 80;
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = "#1a2a4a";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, H - 30);
+        ctx.lineTo(W, H - 30);
+        ctx.stroke();
+        const rA = 15 + mA * 3,
+          rB = 15 + mB * 3;
+        // Ball A
+        ctx.beginPath();
+        ctx.arc(xA, H - 30 - rA, rA, 0, Math.PI * 2);
+        const gA = ctx.createRadialGradient(
+          xA - 5,
+          H - 30 - rA - 5,
+          2,
+          xA,
+          H - 30 - rA,
+          rA,
+        );
+        gA.addColorStop(0, "#00d4ff");
+        gA.addColorStop(1, "#0066aa");
+        ctx.fillStyle = gA;
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(mA + "kg", xA, H - 30 - rA + 5);
+        // Ball B
+        ctx.beginPath();
+        ctx.arc(xB, H - 30 - rB, rB, 0, Math.PI * 2);
+        const gB = ctx.createRadialGradient(
+          xB - 5,
+          H - 30 - rB - 5,
+          2,
+          xB,
+          H - 30 - rB,
+          rB,
+        );
+        gB.addColorStop(0, "#ff6b35");
+        gB.addColorStop(1, "#aa3300");
+        ctx.fillStyle = gB;
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(mB + "kg", xB, H - 30 - rB + 5);
+        if (!running) {
+          ctx.fillStyle = "rgba(0,212,255,0.6)";
+          ctx.font = "12px monospace";
+          ctx.textAlign = "left";
+          ctx.fillText("→ 8m/s", xA + 15 + rA, H - 50);
+          ctx.fillStyle = "rgba(255,107,53,0.6)";
+          ctx.fillText("stationary", xB - 30, H - 50);
+        }
+      }
+      window.startCollision = () => {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width,
+          H = canvas.height;
+        const mA = parseFloat(document.getElementById("massA").value);
+        const mB = parseFloat(document.getElementById("massB").value);
+        const uA = 8,
+          uB = 0;
+        const vFinal = (mA * uA + mB * uB) / (mA + mB); // perfectly inelastic
+        let xA = 80,
+          speed = 3;
+        cancelAnimationFrame(simAnim);
+        let collided = false;
+        function animate() {
+          const rA = 15 + mA * 3,
+            rB = 15 + mB * 3;
+          const xB = W - 80;
+          if (!collided) {
+            xA += speed;
+          }
+          if (!collided && xA + rA >= xB - rB) {
+            collided = true;
+            document.getElementById("coll-info").textContent =
+              `Collision! Momentum before: ${(mA * uA).toFixed(1)} kg·m/s → After: ${((mA + mB) * vFinal).toFixed(1)} kg·m/s | Final velocity: ${vFinal.toFixed(2)} m/s ✓`;
+          }
+          if (collided) {
+            xA += vFinal * 0.4;
+          }
+          drawCollision(ctx, W, H, true, xA, xB);
+          if (xA < W + 100) simAnim = requestAnimationFrame(animate);
+          else notify("Momentum conserved! p_before = p_after ✓");
+        }
+        animate();
+      };
+      window.resetCollision = () => {
+        cancelAnimationFrame(simAnim);
+        const c = document.getElementById("sim-canvas");
+        if (c) drawCollision(c.getContext("2d"), c.width, c.height, false);
+        if (document.getElementById("coll-info"))
+          document.getElementById("coll-info").textContent =
+            "Watch momentum conservation in action!";
+      };
+
+      // PENDULUM SIMULATION
+      function initPendulumSim(canvas, ctx, W, H) {
+        simState.pend = { angle: Math.PI / 6, omega: 0, running: true };
+        animatePendulum(canvas, ctx, W, H);
+      }
+      function animatePendulum(canvas, ctx, W, H) {
+        const g = 9.8;
+        function tick() {
+          if (!simState.pend?.running) {
+            drawPendFrame(ctx, W, H);
+            return;
+          }
+          const L = parseFloat(document.getElementById("pend-len")?.value || 1);
+          const dt = 0.02;
+          simState.pend.omega += (-g / L) * Math.sin(simState.pend.angle) * dt;
+          simState.pend.angle += simState.pend.omega * dt;
+          drawPendFrame(ctx, W, H);
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      }
+      function drawPendFrame(ctx, W, H) {
+        const L = parseFloat(document.getElementById("pend-len")?.value || 1);
+        const angle = simState.pend?.angle || 0;
+        const pivot = { x: W / 2, y: 40 };
+        const scale = Math.min(H - 80, 200) / 2;
+        const bob = {
+          x: pivot.x + Math.sin(angle) * L * scale,
+          y: pivot.y + Math.cos(angle) * L * scale,
+        };
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // String trail
+        ctx.strokeStyle = "rgba(0,212,255,0.2)";
+        ctx.lineWidth = 1;
+        const trailAngle = Math.PI / 5;
+        for (let a = -trailAngle; a <= trailAngle; a += 0.05) {
+          const tx = pivot.x + Math.sin(a) * L * scale,
+            ty = pivot.y + Math.cos(a) * L * scale;
+          ctx.beginPath();
+          ctx.arc(tx, ty, 1, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,212,255,0.1)";
+          ctx.fill();
+        }
+        // Rod
+        ctx.strokeStyle = "#5a7090";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pivot.x, pivot.y);
+        ctx.lineTo(bob.x, bob.y);
+        ctx.stroke();
+        // Pivot
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(pivot.x, pivot.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        // Bob
+        const gradB = ctx.createRadialGradient(
+          bob.x - 4,
+          bob.y - 4,
+          2,
+          bob.x,
+          bob.y,
+          15,
+        );
+        gradB.addColorStop(0, "#ffd700");
+        gradB.addColorStop(1, "#aa8800");
+        ctx.fillStyle = gradB;
+        ctx.beginPath();
+        ctx.arc(bob.x, bob.y, 15, 0, Math.PI * 2);
+        ctx.fill();
+        // Info
+        const T = 2 * Math.PI * Math.sqrt(L / 9.8);
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px Space Mono,monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(`L=${L}m | T=${T.toFixed(2)}s`, 12, H - 12);
+        ctx.fillText("Period ∝ √L only (not mass, not amplitude)", 12, H - 28);
+      }
+      window.togglePendulum = () => {
+        if (simState.pend) {
+          simState.pend.running = !simState.pend.running;
+          document.querySelector(".sim-btn.primary").textContent = simState.pend
+            .running
+            ? "⏸ Pause"
+            : "▶ Resume";
+          if (simState.pend.running) {
+            const c = document.getElementById("sim-canvas");
+            if (c) animatePendulum(c, c.getContext("2d"), c.width, c.height);
+          }
+        }
+      };
+      function updatePendInfo() {
+        const L = parseFloat(document.getElementById("pend-len").value);
+        document.getElementById("pend-val").textContent = `L=${L}m`;
+        const T = 2 * Math.PI * Math.sqrt(L / 9.8);
+        document.getElementById("pend-info").textContent =
+          `T = 2π√(L/g) = ${T.toFixed(2)}s | Doubling L makes T ×√2, NOT ×2!`;
+      }
+      window.updatePendInfo = updatePendInfo;
+
+      // GAS SIMULATION
+      function initGasSim(canvas, ctx, W, H) {
+        simState.gas = { temp: 300, particles: [] };
+        for (let i = 0; i < 30; i++) {
+          const speed = 2;
+          const angle = Math.random() * Math.PI * 2;
+          simState.gas.particles.push({
+            x: 50 + Math.random() * (W - 100),
+            y: 50 + Math.random() * (H - 100),
+            vx: speed * Math.cos(angle),
+            vy: speed * Math.sin(angle),
+          });
+        }
+        function tick() {
+          const { particles, temp } = simState.gas;
+          const speedFactor = Math.sqrt(temp / 300) * 2;
+          const margin = 40,
+            rw = W - margin,
+            rh = H - margin;
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          // Container
+          ctx.strokeStyle = "#1a2a4a";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(margin, margin, W - 2 * margin, H - 2 * margin);
+          ctx.fillStyle = "rgba(0,212,255,0.05)";
+          ctx.fillRect(margin, margin, W - 2 * margin, H - 2 * margin);
+          // Particles
+          particles.forEach((p) => {
+            p.x += (p.vx * speedFactor) / 2;
+            p.y += (p.vy * speedFactor) / 2;
+            if (p.x < margin + 4) {
+              p.x = margin + 4;
+              p.vx *= -1;
+            }
+            if (p.x > rw - 4) {
+              p.x = rw - 4;
+              p.vx *= -1;
+            }
+            if (p.y < margin + 4) {
+              p.y = margin + 4;
+              p.vy *= -1;
+            }
+            if (p.y > rh - 4) {
+              p.y = rh - 4;
+              p.vy *= -1;
+            }
+            const heat = Math.min(1, (temp - 200) / 600);
+            const r = Math.floor(255 * heat),
+              b = Math.floor(255 * (1 - heat));
+            ctx.fillStyle = `rgb(${r},100,${b})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+          });
+          ctx.fillStyle = "#5a7090";
+          ctx.font = "12px Space Mono,monospace";
+          ctx.textAlign = "left";
+          ctx.fillText(
+            `T=${temp}K | P ∝ T (constant V) | Faster = hotter`,
+            12,
+            20,
+          );
+          ctx.fillText(
+            `PV = nRT: ${temp < 300 ? "Cool(slow)" : temp > 400 ? "Hot(fast)" : "Normal"}`,
+            12,
+            H - 10,
+          );
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      }
+      window.heatGas = () => {
+        if (simState.gas && simState.gas.temp < 700) {
+          simState.gas.temp += 50;
+          document.getElementById("gas-info").textContent =
+            `T=${simState.gas.temp}K - Particles move faster! P increases at constant V.`;
+        }
+      };
+      window.coolGas = () => {
+        if (simState.gas && simState.gas.temp > 100) {
+          simState.gas.temp -= 50;
+          document.getElementById("gas-info").textContent =
+            `T=${simState.gas.temp}K - Particles slow down! P decreases.`;
+        }
+      };
+      window.resetGas = () => {
+        if (simState.gas) {
+          simState.gas.temp = 300;
+          document.getElementById("gas-info").textContent =
+            "PV=nRT: See how temperature affects gas particle speed!";
+        }
+      };
+
+      // CIRCUIT SIMULATION
+      function initCircuitSim(canvas, ctx, W, H) {
+        simState.circuit = { on: true, t: 0 };
+        function tick() {
+          const V = parseInt(
+            document.getElementById("volt-slider")?.value || 6,
+          );
+          const R = 3;
+          const I = V / R;
+          simState.circuit.t += 0.05;
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          // Circuit outline
+          const cl = 80,
+            ct = 60,
+            cw = W - 160,
+            ch = H - 120;
+          ctx.strokeStyle = "#1a2a4a";
+          ctx.lineWidth = 3;
+          ctx.strokeRect(cl, ct, cw, ch);
+          // Battery
+          ctx.fillStyle = "#1a2a4a";
+          ctx.fillRect(cl - 8, ct + ch / 2 - 25, 16, 50);
+          ctx.strokeStyle = "#00d4ff";
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(cl, ct + ch / 2 - 15);
+          ctx.lineTo(cl, ct + ch / 2 + 15);
+          ctx.stroke();
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(cl, ct + ch / 2 - 8);
+          ctx.lineTo(cl, ct + ch / 2 + 8);
+          ctx.stroke();
+          ctx.fillStyle = "#00d4ff";
+          ctx.font = "10px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(`${V}V`, cl, ct + ch / 2 - 30);
+          // Resistor box
+          ctx.fillStyle = "rgba(255,107,53,0.2)";
+          ctx.fillRect(cl + cw / 2 - 30, ct - 16, 60, 32);
+          ctx.strokeStyle = "#ff6b35";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(cl + cw / 2 - 30, ct - 16, 60, 32);
+          ctx.fillStyle = "#ff6b35";
+          ctx.textAlign = "center";
+          ctx.fillText(`${R}Ω`, cl + cw / 2, ct + 5);
+          ctx.fillText(`I=${I.toFixed(2)}A`, cl + cw / 2, ct + 22);
+          // Electrons flowing
+          if (simState.circuit.on) {
+            const numE = Math.round(I * 3);
+            for (let i = 0; i < numE; i++) {
+              const phase = (simState.circuit.t + i / numE) % 1;
+              let ex, ey;
+              const path = [
+                [cl + cw, ct],
+                [cl + cw, ct + ch],
+                [cl, ct + ch],
+                [cl, ct],
+              ];
+              const total = 4 * 1;
+              const pos = phase * total;
+              if (pos < 1) {
+                ex = cl + cw;
+                ey = ct + pos * ch;
+              } else if (pos < 2) {
+                ex = cl + cw - (pos - 1) * cw;
+                ey = ct + ch;
+              } else if (pos < 3) {
+                ex = cl;
+                ey = ct + ch - (pos - 2) * ch;
+              } else {
+                ex = cl + (pos - 3) * cw;
+                ey = ct;
+              }
+              const heatColor = `hsl(${200 - I * 20},100%,60%)`;
+              ctx.fillStyle = heatColor;
+              ctx.beginPath();
+              ctx.arc(ex, ey, 4, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+          ctx.fillStyle = "#5a7090";
+          ctx.font = "12px Space Mono,monospace";
+          ctx.textAlign = "left";
+          ctx.fillText(
+            `V=${V}V | R=${R}Ω | I=V/R=${I.toFixed(2)}A | P=I²R=${(I * I * R).toFixed(1)}W`,
+            12,
+            H - 10,
+          );
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+        updateCircuitInfo();
+      }
+      window.toggleCircuit = () => {
+        if (simState.circuit) simState.circuit.on = !simState.circuit.on;
+      };
+      function updateCircuitInfo() {
+        const V = parseInt(document.getElementById("volt-slider")?.value || 6);
+        document.getElementById("volt-val").textContent = V + "V";
+        document.getElementById("circuit-info").textContent =
+          `V=${V}V, R=3Ω → I=${(V / 3).toFixed(2)}A, P=${((V * V) / 3).toFixed(1)}W`;
+      }
+      window.updateCircuitInfo = updateCircuitInfo;
+
+      // WAVE SIMULATION
+      function initWaveSim(canvas, ctx, W, H) {
+        simState.wave = { running: true, t: 0 };
+        function tick() {
+          if (!simState.wave?.running) return;
+          const f = parseInt(
+            document.getElementById("freq-slider")?.value || 3,
+          );
+          const A = parseInt(
+            document.getElementById("amp-slider")?.value || 30,
+          );
+          simState.wave.t += 0.05;
+          const t = simState.wave.t;
+          const lam = W / f;
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          // Grid
+          ctx.strokeStyle = "rgba(26,42,74,0.4)";
+          ctx.lineWidth = 1;
+          for (let x = 0; x < W; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, H);
+            ctx.stroke();
+          }
+          ctx.strokeStyle = "rgba(26,42,74,0.4)";
+          ctx.beginPath();
+          ctx.moveTo(0, H / 2);
+          ctx.lineTo(W, H / 2);
+          ctx.stroke();
+          // Wave
+          ctx.strokeStyle = "#00d4ff";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          for (let x = 0; x < W; x++) {
+            const y =
+              H / 2 + A * Math.sin(2 * Math.PI * (x / lam - f * t * 0.1));
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          // Labels
+          ctx.strokeStyle = "rgba(255,215,0,0.5)";
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(0, H / 2 - A);
+          ctx.lineTo(W, H / 2 - A);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, H / 2 + A);
+          ctx.lineTo(W, H / 2 + A);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.strokeStyle = "rgba(255,107,53,0.6)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(lam, 0);
+          ctx.lineTo(lam, H);
+          ctx.stroke();
+          ctx.fillStyle = "#ff6b35";
+          ctx.font = "11px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("λ", lam / 2, 18);
+          ctx.fillStyle = "#ffd700";
+          ctx.textAlign = "right";
+          ctx.fillText("A", W - 8, H / 2 - A - 4);
+          ctx.fillStyle = "#5a7090";
+          ctx.textAlign = "left";
+          ctx.fillText(
+            `f=${f}Hz | λ=${(W / f).toFixed(0)}px | v=fλ`,
+            8,
+            H - 10,
+          );
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      }
+      window.toggleWave = () => {
+        if (simState.wave) {
+          simState.wave.running = !simState.wave.running;
+          document.querySelector(".sim-btn.primary").textContent = simState.wave
+            .running
+            ? "⏸ Pause"
+            : "▶ Resume";
+          if (simState.wave.running) {
+            const c = document.getElementById("sim-canvas");
+            if (c) initWaveSim(c, c.getContext("2d"), c.width, c.height);
+          }
+        }
+      };
+      function updateWaveInfo() {
+        const f = document.getElementById("freq-slider")?.value || 3;
+        const A = document.getElementById("amp-slider")?.value || 30;
+        document.getElementById("freq-val").textContent = f + " Hz";
+        document.getElementById("amp-val").textContent = A;
+        document.getElementById("wave-info").textContent =
+          `f=${f}Hz | Higher freq = shorter wavelength at same speed | Amplitude doesn't affect speed`;
+      }
+      window.updateWaveInfo = updateWaveInfo;
+
+      // OPTICS SIMULATION
+      let lensType = "convex";
+      function initOpticsSim(canvas, ctx, W, H) {
+        redrawOptics();
+      }
+      window.switchLens = (type) => {
+        lensType = type;
+        redrawOptics();
+      };
+      window.redrawOptics = () => {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width,
+          H = canvas.height;
+        const u = parseInt(document.getElementById("obj-dist")?.value || 150);
+        document.getElementById("obj-dist-val").textContent = u;
+        const f = 80;
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Optical axis
+        ctx.strokeStyle = "rgba(90,112,144,0.5)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, H / 2);
+        ctx.lineTo(W, H / 2);
+        ctx.stroke();
+        const lensX = W / 2;
+        // Draw lens
+        ctx.strokeStyle = "#00d4ff";
+        ctx.lineWidth = 2.5;
+        if (lensType === "convex") {
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX + 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX - 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+        } else if (lensType === "concave") {
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX - 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX + 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+        } else {
+          // mirror
+          ctx.beginPath();
+          ctx.arc(lensX + f, H / 2, f, Math.PI * 0.6, Math.PI * 1.4);
+          ctx.stroke();
+        }
+        // Focal points
+        ctx.fillStyle = "rgba(255,107,53,0.8)";
+        ctx.beginPath();
+        ctx.arc(lensX + f, H / 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(lensX - f, H / 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ff6b35";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("F", lensX + f, H / 2 + 16);
+        ctx.fillText("F", lensX - f, H / 2 + 16);
+        // Object
+        const objX = lensX - u / 1.5;
+        if (objX > 10) {
+          ctx.strokeStyle = "#7eff6e";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(objX, H / 2);
+          ctx.lineTo(objX, H / 2 - 50);
+          ctx.stroke();
+          ctx.fillStyle = "#7eff6e";
+          ctx.beginPath();
+          ctx.moveTo(objX - 6, H / 2 - 50);
+          ctx.lineTo(objX + 6, H / 2 - 50);
+          ctx.lineTo(objX, H / 2 - 65);
+          ctx.fill();
+        }
+        // Image (lens formula)
+        let v = Infinity,
+          valid = false;
+        const ef = lensType === "concave" ? -f : f;
+        if (u !== ef) {
+          v = (u * ef) / (u - ef);
+          valid = true;
+        }
+        if (valid && isFinite(v)) {
+          const imgX = lensX + v / 1.5;
+          const mag = v / u;
+          const imgH = 50 * Math.abs(mag);
+          const flip = v > 0 && lensType !== "concave" ? -1 : 1;
+          ctx.strokeStyle =
+            v > 0 ? "rgba(191,127,255,0.8)" : "rgba(191,127,255,0.4)";
+          ctx.setLineDash(v > 0 ? [] : [5, 5]);
+          ctx.lineWidth = 2;
+          if (imgX > 10 && imgX < W - 10) {
+            ctx.beginPath();
+            ctx.moveTo(imgX, H / 2);
+            ctx.lineTo(imgX, H / 2 + flip * imgH);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+          const vStr =
+            v > 0
+              ? v.toFixed(0) + "(real)"
+              : Math.abs(v).toFixed(0) + "(virtual)";
+          document.getElementById("optics-info").textContent =
+            `u=${(u / 1.5) | 0}, f=${ef}, v=${vStr}, m=${mag.toFixed(2)}`;
+        }
+        // Rays
+        ctx.strokeStyle = "rgba(255,215,0,0.35)";
+        ctx.lineWidth = 1.5;
+        if (objX > 10) {
+          // Ray 1: parallel then through F
+          ctx.beginPath();
+          ctx.moveTo(objX, H / 2 - 50);
+          ctx.lineTo(lensX, H / 2 - 50);
+          if (lensType === "concave") {
+            ctx.lineTo(lensX - 50, H / 2 - 50 + 50 * ((1 + 50 / f) | 0));
+          } else {
+            ctx.lineTo(W, H / 2 - 50 + ((W - lensX) / f) * 50);
+          }
+          ctx.stroke();
+        }
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "left";
+        ctx.setLineDash([]);
+        ctx.fillText("1/f = 1/u + 1/v", 8, H - 10);
+      };
+
+      // ========== FORMULA SHEET ==========
+      function renderFormulaSheet() {
+        const sections = [
+          {
+            title: "⚙️ Mechanics",
+            data: [
+              ["SUVAT: v = u + at", "v=u+at", "no displacement"],
+              ["SUVAT: s = ut + ½at²", "s=ut+½at²", "no final velocity"],
+              ["SUVAT: v² = u² + 2as", "v²=u²+2as", "no time needed"],
+              ["Newton 2nd Law", "F=ma=Δp/Δt", "N=kg·m/s²"],
+              ["Momentum", "p=mv", "kg·m/s"],
+              ["Impulse", "J=FΔt=m(v-u)", "Ns"],
+              ["Projectile Range", "R=u²sin2θ/g", "max at 45°"],
+              ["Projectile Height", "H=u²sin²θ/2g", "vertical only"],
+              ["Centripetal Force", "F=mv²/r=mω²r", "toward centre"],
+              ["Gravity", "F=Gm₁m₂/r²", "G=6.67×10⁻¹¹"],
+              ["SHM", "a=−ω²x", "restoring"],
+              ["Pendulum", "T=2π√(L/g)", "small angle"],
+              ["Spring-mass", "T=2π√(m/k)", "SHM"],
+              ["Work", "W=Fs cosθ", "θ to displacement"],
+              ["KE", "KE=½mv²", "joules"],
+              ["GPE", "PE=mgh", "joules"],
+              ["Power", "P=W/t=Fv", "watts"],
+              ["Efficiency", "η=(useful/input)×100%", "<100% always"],
+            ],
+          },
+          {
+            title: "🌡️ Thermodynamics & Waves",
+            data: [
+              ["Pressure", "P=F/A", "pascals"],
+              ["Fluid pressure", "P=ρgh", "ρ in kg/m³"],
+              ["Archimedes", "U=ρ_f V_sub g", "upthrust"],
+              ["Gas: Boyle", "P₁V₁=P₂V₂", "T constant"],
+              ["Gas: Charles", "V₁/T₁=V₂/T₂", "P constant; T in K"],
+              ["Ideal Gas", "PV=nRT", "R=8.314"],
+              ["Specific Heat", "Q=mcΔθ", "J/kg·K"],
+              ["Latent Heat", "Q=mL", "no temp change"],
+              ["Linear Expansion", "ΔL=L₀αΔT", "α=expansivity"],
+              ["Wave speed", "v=fλ", "all waves"],
+              ["Snell's Law", "n₁sinθ₁=n₂sinθ₂", "refraction"],
+              ["Refractive index", "n=c/v=sini/sinr", ">1 for glass"],
+              ["Critical angle", "sinC=1/n", "TIR when θ>C"],
+              ["Mirror/Lens", "1/f=1/u+1/v", "real-is-positive"],
+              ["Magnification", "m=v/u", "linear"],
+            ],
+          },
+          {
+            title: "⚡ Electricity & Magnetism",
+            data: [
+              ["Coulomb's Law", "F=kq₁q₂/r²", "k=9×10⁹"],
+              ["Ohm's Law", "V=IR", "constant temp"],
+              ["Terminal voltage", "V=ε−Ir", "discharge"],
+              ["Power", "P=IV=I²R=V²/R", "watts"],
+              ["Energy", "E=Pt=IVt", "J; kWh billing"],
+              ["Capacitance", "C=Q/V", "farads"],
+              ["Cap. energy", "E=½CV²", "joules"],
+              ["Resistors series", "R_T=R₁+R₂+...", "same current"],
+              ["Resistors parallel", "1/R_T=1/R₁+1/R₂", "same voltage"],
+              ["Cap. series", "1/C_T=1/C₁+1/C₂", "OPPOSITE to R!"],
+              ["Cap. parallel", "C_T=C₁+C₂+...", "OPPOSITE to R!"],
+              ["Induction", "ε=−NdΦ/dt", "Faraday's law"],
+              ["Transformer", "Vs/Vp=Ns/Np", "ideal"],
+              ["Impedance", "Z=√[R²+(X_L−X_C)²]", "AC circuit"],
+              ["Resonance", "f₀=1/(2π√LC)", "X_L=X_C"],
+              ["RMS", "V_rms=V₀/√2", "sinusoidal"],
+            ],
+          },
+          {
+            title: "⚛️ Modern Physics",
+            data: [
+              ["Photon energy", "E=hf=hc/λ", "h=6.63×10⁻³⁴"],
+              ["Photoelectric", "hf=φ+½mv²_max", "threshold f₀=φ/h"],
+              ["de Broglie", "λ=h/p=h/mv", "matter waves"],
+              ["Radioactive decay", "N=N₀e^(−λt)", "λ=decay const."],
+              ["Half-life", "T½=0.693/λ", "time to halve"],
+              ["Half-lives method", "N=N₀×(½)ⁿ", "n=no. half-lives"],
+              ["Activity", "A=λN", "Bq"],
+              ["Mass-energy", "ΔE=Δmc²", "c=3×10⁸"],
+              ["Transistor", "I_E=I_B+I_C; β=I_C/I_B", "KCL"],
+              ["Electrolysis", "m=ZIt", "Z=electrochemical equiv."],
+            ],
+          },
+        ];
+        const el = document.getElementById("formula-content");
+        el.innerHTML = sections
+          .map(
+            (s) => `
+    <div class="formula-section">
+      <div class="section-heading">${s.title}</div>
+      <table class="formula-table">
+        ${s.data.map((row) => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td></tr>`).join("")}
+      </table>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      // ========== SEARCH ==========
+      function renderSearch() {
+        const topics = [...new Set(QUESTION_BANK.map((q) => q.topic))];
+        const filters = document.getElementById("topic-filters");
+        filters.innerHTML =
+          `<button class="filter-btn active" onclick="setFilter(this,'all')">All Topics</button>` +
+          topics
+            .map(
+              (t) =>
+                `<button class="filter-btn" onclick="setFilter(this,'${t}')">${t}</button>`,
+            )
+            .join("");
+        filterQuestions();
+      }
+      let activeFilter = "all";
+      function setFilter(btn, topic) {
+        document
+          .querySelectorAll(".filter-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeFilter = topic;
+        filterQuestions();
+      }
+      window.setFilter = setFilter;
+      function filterQuestions() {
+        const q =
+          document.getElementById("search-input")?.value.toLowerCase() || "";
+        const results = QUESTION_BANK.filter(
+          (item) =>
+            (activeFilter === "all" || item.topic === activeFilter) &&
+            (q === "" ||
+              item.q.toLowerCase().includes(q) ||
+              item.topic.toLowerCase().includes(q) ||
+              item.opts.some((o) => o.toLowerCase().includes(q))),
+        );
+        const el = document.getElementById("search-results");
+        if (results.length === 0) {
+          el.innerHTML =
+            '<div style="text-align:center;color:var(--muted);padding:40px;">No questions found. Try different keywords.</div>';
+          return;
+        }
+        el.innerHTML = results
+          .map(
+            (item, i) => `
+    <div class="result-card">
+      <div class="result-meta">
+        <span class="result-year">${item.year || "JAMB"}</span>
+        <span class="result-topic">${item.topic}</span>
+        <span class="result-diff diff-${item.diff}">${item.diff?.toUpperCase()}</span>
+      </div>
+      <div class="result-q">${item.q}</div>
+      <div class="options" id="search-opts-${i}">
+        ${item.opts.map((o, oi) => `<button class="option-btn" onclick="answerSearch(this,${oi},${item.ans},'search-exp-${i}','${item.exp.replace(/'/g, "\\'")}')"> ${o}</button>`).join("")}
+      </div>
+      <div class="explanation" id="search-exp-${i}">💡 ${item.exp}</div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+      window.filterQuestions = filterQuestions;
+      window.answerSearch = (btn, sel, ans, expId, exp) => {
+        const parent = btn.closest(".options");
+        if (parent.querySelector(".correct,.wrong")) return;
+        parent.querySelectorAll(".option-btn").forEach((b, i) => {
+          b.disabled = true;
+          if (i === ans) b.classList.add("correct");
+          else if (i === sel) b.classList.add("wrong");
+        });
+        document.getElementById(expId).classList.add("show");
+        if (sel === ans) {
+          totalScore += 2;
+          localStorage.setItem("jamb-score", totalScore);
+          updateScore();
+          notify("+2 pts! ✓");
+        }
+      };
+
+      // ========== QUIZ MODE ==========
+      function renderQuizTopicSelect() {
+        const topics = ["all", ...new Set(QUESTION_BANK.map((q) => q.topic))];
+        document.getElementById("quiz-topic-select").innerHTML = topics
+          .slice(0, 12)
+          .map(
+            (t) => `
+    <button class="sim-btn ${t === "all" ? "primary" : ""}" onclick="setQuizTopic(this,'${t}')">${t === "all" ? "🎯 All Topics" : t}</button>
+  `,
+          )
+          .join("");
+      }
+      window.setQuizTopic = (btn, topic) => {
+        document
+          .querySelectorAll("#quiz-topic-select .sim-btn")
+          .forEach((b) => b.classList.remove("primary"));
+        btn.classList.add("primary");
+        quizTopic = topic;
+        startQuiz();
+      };
+      function startQuiz() {
+        let pool =
+          quizTopic === "all"
+            ? QUESTION_BANK
+            : QUESTION_BANK.filter((q) => q.topic === quizTopic);
+        quizQuestions = pool.sort(() => Math.random() - 0.5).slice(0, 15);
+        quizIdx = 0;
+        quizScore = 0;
+        renderQuizQ();
+      }
+      window.startQuiz = startQuiz;
+      function renderQuizQ() {
+        const el = document.getElementById("quiz-area");
+        if (quizIdx >= quizQuestions.length) {
+          const pct = Math.round((quizScore / quizQuestions.length) * 100);
+          el.innerHTML = `<div class="quiz-result">
+      <div class="quiz-result-score">${quizScore}/${quizQuestions.length}</div>
+      <div class="quiz-result-msg">${pct >= 80 ? "🏆 Outstanding! You are READY!" : pct >= 60 ? "💪 Good! Review weak spots." : "📚 Keep studying — go back to the topics."}</div>
+      <div style="font-size:0.85rem;color:var(--muted);margin-top:8px;">Score: ${pct}% | ${pct >= 80 ? "Predicted 300+" : "Keep pushing!"}${totalScore > 0 ? " | Total points: " + totalScore : ""}</div>
+      <button class="quiz-restart" onclick="startQuiz()">Try Again 🔄</button>
+    </div>`;
+          return;
+        }
+        const q = quizQuestions[quizIdx];
+        el.innerHTML = `
+    <div class="quiz-header">
+      <div class="quiz-progress-text">Question ${quizIdx + 1} / ${quizQuestions.length} | <span style="color:var(--muted)">${q.topic}</span></div>
+      <div class="quiz-score">Score: ${quizScore}/${quizIdx}</div>
+    </div>
+    <div class="quiz-card">
+      <div class="quiz-q-text">${q.q}</div>
+      <div class="quiz-opts">
+        ${q.opts.map((o, i) => `<button class="quiz-opt" onclick="answerQuiz(this,${i},${q.ans},'${q.exp.replace(/'/g, "\\'")}')"> ${o}</button>`).join("")}
+      </div>
+      <div class="quiz-exp" id="quiz-exp">💡 ${q.exp}</div>
+      <button class="quiz-next" id="quiz-next" onclick="quizNext()">Next Question →</button>
+    </div>
+  `;
+      }
+      window.answerQuiz = (btn, sel, ans, exp) => {
+        const opts = document.querySelectorAll(".quiz-opt");
+        if (
+          [...opts].some(
+            (b) =>
+              b.classList.contains("correct") || b.classList.contains("wrong"),
+          )
+        )
+          return;
+        opts.forEach((b, i) => {
+          b.disabled = true;
+          if (i === ans) b.classList.add("correct");
+          else if (i === sel) b.classList.add("wrong");
+        });
+        if (sel === ans) {
+          quizScore++;
+          totalScore += 3;
+          localStorage.setItem("jamb-score", totalScore);
+          updateScore();
+        }
+        document.getElementById("quiz-exp").classList.add("show");
+        document.getElementById("quiz-next").classList.add("show");
+      };
+      window.quizNext = () => {
+        quizIdx++;
+        renderQuizQ();
+      };
+
+      // ========== HELPERS ==========
+      function drawArrow(ctx, from, to, colorOrIgnored, label) {
+        const color =
+          typeof colorOrIgnored === "string" ? colorOrIgnored : "#00d4ff";
+        const dx = to.x - from.x,
+          dy = to.y - from.y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        if (len < 5) return;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+        const angle = Math.atan2(dy, dx);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(to.x, to.y);
+        ctx.lineTo(
+          to.x - 12 * Math.cos(angle - 0.4),
+          to.y - 12 * Math.sin(angle - 0.4),
+        );
+        ctx.lineTo(
+          to.x - 12 * Math.cos(angle + 0.4),
+          to.y - 12 * Math.sin(angle + 0.4),
+        );
+        ctx.fill();
+        if (label) {
+          ctx.fillStyle = color;
+          ctx.font = "bold 13px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(
+            label,
+            to.x + 12 * Math.cos(angle),
+            to.y + 12 * Math.sin(angle) + 5,
+          );
+        }
+      }
+      function dist(x1, y1, x2, y2) {
+        return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+      }
+
+      // ========== START ==========
+      init();
+    </script>
+  </body>
+</html>
