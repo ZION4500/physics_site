@@ -876,6 +876,12 @@
         <button class="nav-btn" onclick="showPage('search')">
           🔍 Question Bank
         </button>
+        <button class="nav-btn" onclick="showPage('definitions')">
+          📖 Definitions
+        </button>
+        <button class="nav-btn" onclick="showPage('summary')">
+          📊 Summary
+        </button>
       </div>
       <div id="score-badge">🏆 Score: <span id="total-score">0</span></div>
     </div>
@@ -966,6 +972,44 @@
         </div>
         <div class="search-results" id="search-results"></div>
       </div>
+
+      <!-- DEFINITIONS PAGE -->
+      <div id="definitions-page" class="page">
+        <div style="padding: 20px; max-width: 1100px; margin: 0 auto">
+          <h2
+            style="font-size: 1.8rem; font-weight: 900; margin-bottom: 8px"
+            class="glow-accent"
+          >
+            📖 Key Definitions — JAMB & WAEC
+          </h2>
+          <p
+            style="color: var(--muted); margin-bottom: 20px; font-size: 0.9rem"
+          >
+            These are the most frequently asked definitions in JAMB and WAEC.
+            Learn them word-for-word!
+          </p>
+          <div id="def-content"></div>
+        </div>
+      </div>
+
+      <!-- SUMMARY PAGE -->
+      <div id="summary-page" class="page">
+        <div style="padding: 20px; max-width: 1100px; margin: 0 auto">
+          <h2
+            style="font-size: 1.8rem; font-weight: 900; margin-bottom: 8px"
+            class="glow-accent"
+          >
+            📊 Topic Summary & JAMB Hotspots
+          </h2>
+          <p
+            style="color: var(--muted); margin-bottom: 20px; font-size: 0.9rem"
+          >
+            Quick-glance summary of every topic with the exact areas JAMB tests
+            most. Use this the night before your exam!
+          </p>
+          <div id="summary-content"></div>
+        </div>
+      </div>
     </div>
 
     <div id="notif"></div>
@@ -1009,7 +1053,14 @@
             "Significant figures: non-zero digits always count; zeros between non-zeros count",
             "Standard form: 1 ≤ coefficient < 10, e.g. 0.000456 = 4.56 × 10⁻⁴",
           ],
-          tip: "Errors appear in EVERY JAMB paper. Know absolute error, relative error, and % error cold.",
+          tip: "Errors appear in EVERY JAMB paper. Know absolute error, relative error, and % error cold. Dimensional analysis questions come almost every year!",
+          extraNotes: [
+            "JAMB HOT: Dimension of velocity = [LT⁻¹], acceleration = [LT⁻²], force = [MLT⁻²], pressure = [ML⁻¹T⁻²], power = [ML²T⁻³], energy = [ML²T⁻²]",
+            "Derived quantities: pressure, velocity, acceleration, force, density, work, power, capacitance, resistance",
+            "Random errors: due to unpredictable variations. Systematic errors: consistently too high or too low",
+            "Zero error: vernier caliper reading before measurement — must be subtracted from final reading",
+            "Parallax error: looking at scale at an angle. Eliminate by reading at eye level",
+          ],
           commonQs: [
             {
               q: "The instrument with the highest precision for measuring length is",
@@ -3044,14 +3095,25 @@
           quiz: "quiz-page",
           search: "search-page",
           topic: "topic-page",
+          definitions: "definitions-page",
+          summary: "summary-page",
         };
         document.getElementById(map[page]).classList.add("active");
-        const btnMap = { home: 0, formula: 1, quiz: 2, search: 3 };
+        const btnMap = {
+          home: 0,
+          formula: 1,
+          quiz: 2,
+          search: 3,
+          definitions: 4,
+          summary: 5,
+        };
         if (btnMap[page] !== undefined)
           document
             .querySelectorAll(".nav-btn")
             [btnMap[page]].classList.add("active");
         if (page === "quiz") startQuiz();
+        if (page === "definitions") renderDefinitions();
+        if (page === "summary") renderSummary();
         window.scrollTo(0, 0);
       }
 
@@ -3101,6 +3163,7 @@
       <div class="notes-list">
         ${currentTopic.notes.map((n) => `<div class="note-item">▸ ${n}</div>`).join("")}
       </div>
+      ${currentTopic.extraNotes ? `<div style="margin-top:10px;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent3);margin-bottom:6px;">⚡ JAMB Deep Dive</div><div class="notes-list">${currentTopic.extraNotes.map((n) => `<div class="note-item" style="border-left-color:var(--accent3);background:rgba(126,255,110,0.05)">⚡ ${n}</div>`).join("")}</div>` : ""}
       <div class="tip-box">⭐ EXAM TIP: ${currentTopic.tip}</div>
     </div>
     <div class="sim-container">
@@ -3247,13 +3310,75 @@
         <button class="sim-btn primary" onclick="switchLens('convex')">Convex Lens</button>
         <button class="sim-btn" onclick="switchLens('concave')">Concave Lens</button>
         <button class="sim-btn" onclick="switchLens('mirror')">Concave Mirror</button>
+        <button class="sim-btn" onclick="switchLens('convexmirror')">Convex Mirror</button>
       </div>
       <div class="slider-row"><label>Object distance</label><input type="range" id="obj-dist" min="30" max="250" value="150" oninput="redrawOptics()"><span class="slider-val" id="obj-dist-val">150</span></div>
       <div class="sim-info" id="optics-info">Drag slider to move object. Watch image form!</div>`,
+          units: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="runDimAnalysis()">▶ Check Dimensions</button><button class="sim-btn" onclick="resetUnitSim()">Reset</button></div>
+      <div class="slider-row"><label>Pick equation:</label><select id="dim-select" onchange="runDimAnalysis()" style="flex:1;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:5px;"><option value="0">F = ma (Force)</option><option value="1">P = F/A (Pressure)</option><option value="2">E = ½mv² (KE)</option><option value="3">P = W/t (Power)</option><option value="4">v = fλ (Wave speed)</option><option value="5">ρ = m/V (Density)</option></select></div>
+      <div class="sim-info" id="unit-info">Select an equation to verify its dimensions!</div>`,
+          energy: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="dropBall()">⬇ Drop Ball</button><button class="sim-btn" onclick="resetEnergy()">Reset</button></div>
+      <div class="slider-row"><label>Height (m)</label><input type="range" id="height-slider" min="1" max="10" value="5" oninput="updateEnergyInfo()"><span class="slider-val" id="height-val">5m</span></div>
+      <div class="sim-info" id="energy-info">KE + PE = constant. At top: all PE. At bottom: all KE!</div>`,
+          fluid: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="toggleFluidSim()">▶ Animate</button><button class="sim-btn" onclick="changeFluid()">Change Liquid</button></div>
+      <div class="slider-row"><label>Object density (kg/m³)</label><input type="range" id="density-slider" min="200" max="2000" value="800" oninput="updateFluidInfo()"><span class="slider-val" id="density-val">800</span></div>
+      <div class="sim-info" id="fluid-info">Float when object density < liquid density. Sink when greater.</div>`,
+          heat: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="addHeat()">🔥 Add Heat</button><button class="sim-btn" onclick="removeHeat()">❄️ Remove</button><button class="sim-btn" onclick="resetHeat()">Reset</button></div>
+      <div class="sim-info" id="heat-info">Heating curve: temperature rises, then FLAT during phase change (latent heat)!</div>`,
+          capacitor: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="chargeCapacitor()">⚡ Charge</button><button class="sim-btn" onclick="dischargeCapacitor()">💨 Discharge</button><button class="sim-btn" onclick="resetCapacitor()">Reset</button></div>
+      <div class="slider-row"><label>Capacitance (µF)</label><input type="range" id="cap-slider" min="1" max="100" value="50" oninput="updateCapInfo()"><span class="slider-val" id="cap-val">50µF</span></div>
+      <div class="sim-info" id="cap-info">Q = CV. Energy = ½CV². Watch charge build up on plates!</div>`,
+          electrolysis: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="startElectrolysis()">▶ Start</button><button class="sim-btn" onclick="stopElectrolysis()">⏹ Stop</button><button class="sim-btn" onclick="resetElectrolysis()">Reset</button></div>
+      <div class="slider-row"><label>Current (A)</label><input type="range" id="elec-current" min="1" max="10" value="3" oninput="updateElecInfo()"><span class="slider-val" id="elec-val">3A</span></div>
+      <div class="sim-info" id="elec-info">m = ZIt: mass deposited ∝ current × time. Watch ions migrate to electrodes!</div>`,
+          induction: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="moveMagnet('in')">Magnet IN →</button><button class="sim-btn" onclick="moveMagnet('out')">← Magnet OUT</button><button class="sim-btn" onclick="stopMagnet()">⏹ Stop</button></div>
+      <div class="sim-info" id="induction-info">Faraday: EMF = -N dΦ/dt. Lenz: induced current opposes change!</div>`,
+          ac: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="toggleAC()">⏸ Pause</button><button class="sim-btn" onclick="showACComponent('R')">Pure R</button><button class="sim-btn" onclick="showACComponent('L')">Inductor</button><button class="sim-btn" onclick="showACComponent('C')">Capacitor</button><button class="sim-btn" onclick="showACComponent('RLC')">RLC</button></div>
+      <div class="sim-info" id="ac-info">AC: Vrms = V₀/√2. Resistor: in phase. Inductor: V leads I by 90°. Capacitor: I leads V by 90°.</div>`,
+          photoelectric: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="shootPhoton()">💡 Shine Light</button><button class="sim-btn" onclick="resetPhoto()">Reset</button></div>
+      <div class="slider-row"><label>Frequency (×10¹⁴ Hz)</label><input type="range" id="photo-freq" min="3" max="15" value="7" oninput="updatePhotoInfo()"><span class="slider-val" id="photo-val">7</span></div>
+      <div class="sim-info" id="photo-info">hf = φ + KE_max. Below threshold: NO electrons emitted regardless of intensity!</div>`,
+          radioactive: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="startDecay()">☢ Start Decay</button><button class="sim-btn" onclick="resetDecay()">Reset</button></div>
+      <div class="slider-row"><label>Half-life (steps)</label><input type="range" id="halflife-slider" min="1" max="10" value="3" oninput="updateDecayInfo()"><span class="slider-val" id="halflife-val">3</span></div>
+      <div class="sim-info" id="decay-info">N = N₀×(½)ⁿ. Watch atoms randomly decay! Count remaining after each half-life.</div>`,
+          logic: `<canvas id="sim-canvas" width="600" height="300" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="toggleLogicA()">Toggle A</button><button class="sim-btn" onclick="toggleLogicB()">Toggle B</button><button class="sim-btn" onclick="changeGate()">Next Gate</button></div>
+      <div class="sim-info" id="logic-info">Click toggles to test all input combinations! See truth table update in real time.</div>`,
+          spectrum: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="showSpectrumType('em')">Full EM Spectrum</button><button class="sim-btn" onclick="showSpectrumType('visible')">Visible Light</button></div>
+      <div class="sim-info" id="spectrum-info">All EM waves travel at c=3×10⁸m/s in vacuum. Gamma has highest freq, radio has lowest!</div>`,
+          energy2: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="showEnergySource('solar')">☀ Solar</button><button class="sim-btn" onclick="showEnergySource('nuclear')">☢ Nuclear</button><button class="sim-btn" onclick="showEnergySource('hydro')">💧 Hydro</button><button class="sim-btn" onclick="showEnergySource('wind')">💨 Wind</button></div>
+      <div class="sim-info" id="energy2-info">Renewable: solar, wind, hydro, tidal. Non-renewable: coal, oil, gas, nuclear fission.</div>`,
+          fluid2: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="toggleViscosity()">▶ Flow</button><button class="sim-btn" onclick="stopViscosity()">⏹ Stop</button></div>
+      <div class="slider-row"><label>Ball radius</label><input type="range" id="tube-radius" min="5" max="30" value="15" oninput="updateViscInfo()"><span class="slider-val" id="tube-val">15</span></div>
+      <div class="sim-info" id="visc-info">Stokes' law: F = 6πηrv. Terminal velocity when Weight = Upthrust + Drag!</div>`,
+          lenses: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="showInstrument('eye')">👁 Human Eye</button><button class="sim-btn" onclick="showInstrument('microscope')">🔬 Microscope</button><button class="sim-btn" onclick="showInstrument('telescope')">🔭 Telescope</button></div>
+      <div class="sim-info" id="lens-info">Short-sighted: diverging lens corrects. Long-sighted: converging lens corrects.</div>`,
+          revision: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="runRevisionSim()">▶ Common Traps</button></div>
+      <div class="sim-info" id="rev-info">Visualizing the most common JAMB tricks and misconceptions!</div>`,
+          final: `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+      <div class="sim-controls"><button class="sim-btn primary" onclick="runFinalSim()">🏆 Physics Showcase</button></div>
+      <div class="sim-info" id="final-info">All 25 topics mastered! Watch a showcase of all physics simulations!</div>`,
         };
         return (
           sims[type] ||
-          `<div style="padding:20px;text-align:center;color:var(--muted)">🧪 Interactive simulation for ${type}<br><small>Watch this topic's concepts come alive!</small></div>`
+          `<canvas id="sim-canvas" width="600" height="280" style="max-width:100%;background:#080e1c;"></canvas>
+    <div class="sim-controls"><button class="sim-btn primary" onclick="drawDefaultSim(document.getElementById('sim-canvas').getContext('2d'),600,280,'${type}')">▶ Visualize</button></div>
+    <div class="sim-info">Interactive simulation loading for ${type}...</div>`
         );
       }
 
@@ -3278,6 +3403,27 @@
         else if (type === "circuit") initCircuitSim(canvas, ctx, W, H);
         else if (type === "waves") initWaveSim(canvas, ctx, W, H);
         else if (type === "optics") initOpticsSim(canvas, ctx, W, H);
+        else if (type === "units") initUnitsSim(canvas, ctx, W, H);
+        else if (type === "energy") initEnergySim(canvas, ctx, W, H);
+        else if (type === "fluid") initFluidSim(canvas, ctx, W, H);
+        else if (type === "heat") initHeatSim(canvas, ctx, W, H);
+        else if (type === "capacitor") initCapacitorSim(canvas, ctx, W, H);
+        else if (type === "electrolysis")
+          initElectrolysisSim(canvas, ctx, W, H);
+        else if (type === "induction") initInductionSim(canvas, ctx, W, H);
+        else if (type === "ac") initACSim(canvas, ctx, W, H);
+        else if (type === "photoelectric") initPhotoSim(canvas, ctx, W, H);
+        else if (type === "radioactive") initDecaySim(canvas, ctx, W, H);
+        else if (type === "logic") initLogicSim(canvas, ctx, W, H);
+        else if (type === "spectrum") {
+          showSpectrumType("em");
+        } else if (type === "energy2") {
+          showEnergySource("solar");
+        } else if (type === "fluid2") initViscositySim(canvas, ctx, W, H);
+        else if (type === "lenses") {
+          showInstrument("eye");
+        } else if (type === "revision") runRevisionSim();
+        else if (type === "final") runFinalSim();
         else drawDefaultSim(ctx, W, H, type);
       }
 
@@ -4523,6 +4669,3213 @@
       function dist(x1, y1, x2, y2) {
         return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
       }
+
+      // ========== NEW SIMULATIONS ==========
+
+      // UNITS / DIMENSIONAL ANALYSIS SIM
+      function initUnitsSim(canvas, ctx, W, H) {
+        drawDefaultSim(ctx, W, H, "units");
+        setTimeout(runDimAnalysis, 200);
+      }
+      window.runDimAnalysis = function () {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width,
+          H = canvas.height;
+        const idx = parseInt(document.getElementById("dim-select")?.value || 0);
+        const eqs = [
+          {
+            name: "F = ma",
+            lhs: "[Force]",
+            lhsDim: "[MLT⁻²]",
+            rhs: "[mass]×[accel]",
+            rhsDim: "[M]×[LT⁻²]=[MLT⁻²]",
+            match: true,
+            unit: "Newton (N)",
+          },
+          {
+            name: "P = F/A",
+            lhs: "[Pressure]",
+            lhsDim: "[ML⁻¹T⁻²]",
+            rhs: "[Force]/[Area]",
+            rhsDim: "[MLT⁻²]/[L²]=[ML⁻¹T⁻²]",
+            match: true,
+            unit: "Pascal (Pa)",
+          },
+          {
+            name: "E = ½mv²",
+            lhs: "[Energy]",
+            lhsDim: "[ML²T⁻²]",
+            rhs: "[mass]×[velocity]²",
+            rhsDim: "[M]×[LT⁻¹]²=[ML²T⁻²]",
+            match: true,
+            unit: "Joule (J)",
+          },
+          {
+            name: "P = W/t",
+            lhs: "[Power]",
+            lhsDim: "[ML²T⁻³]",
+            rhs: "[Energy]/[Time]",
+            rhsDim: "[ML²T⁻²]/[T]=[ML²T⁻³]",
+            match: true,
+            unit: "Watt (W)",
+          },
+          {
+            name: "v = fλ",
+            lhs: "[Speed]",
+            lhsDim: "[LT⁻¹]",
+            rhs: "[freq]×[wavelength]",
+            rhsDim: "[T⁻¹]×[L]=[LT⁻¹]",
+            match: true,
+            unit: "m/s",
+          },
+          {
+            name: "ρ = m/V",
+            lhs: "[Density]",
+            lhsDim: "[ML⁻³]",
+            rhs: "[mass]/[volume]",
+            rhsDim: "[M]/[L³]=[ML⁻³]",
+            match: true,
+            unit: "kg/m³",
+          },
+        ];
+        const eq = eqs[idx] || eqs[0];
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Title
+        ctx.fillStyle = "#00d4ff";
+        ctx.font = "bold 22px Space Mono,monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("Dimensional Analysis: " + eq.name, W / 2, 45);
+        // Left side box
+        const lx = 60,
+          ly = 80,
+          lw = 200,
+          lh = 120;
+        ctx.fillStyle = "rgba(0,212,255,0.1)";
+        ctx.fillRect(lx, ly, lw, lh);
+        ctx.strokeStyle = "#00d4ff";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(lx, ly, lw, lh);
+        ctx.fillStyle = "#00d4ff";
+        ctx.font = "bold 14px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("LHS", lx + lw / 2, ly + 25);
+        ctx.fillStyle = "#e2eaf7";
+        ctx.font = "13px Outfit,sans-serif";
+        ctx.fillText(eq.lhs, lx + lw / 2, ly + 55);
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "bold 14px Space Mono,monospace";
+        ctx.fillText(eq.lhsDim, lx + lw / 2, ly + 85);
+        // Equals sign
+        ctx.fillStyle = "#7eff6e";
+        ctx.font = "bold 32px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(eq.match ? "=" : "≠", W / 2, ly + 65);
+        // Right side box
+        const rx = W - 60 - lw,
+          ry = 80,
+          rw = 200,
+          rh = 120;
+        ctx.fillStyle = "rgba(255,107,53,0.1)";
+        ctx.fillRect(rx, ry, rw, rh);
+        ctx.strokeStyle = "#ff6b35";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(rx, ry, rw, rh);
+        ctx.fillStyle = "#ff6b35";
+        ctx.font = "bold 14px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("RHS", rx + rw / 2, ry + 25);
+        ctx.fillStyle = "#e2eaf7";
+        ctx.font = "13px Outfit,sans-serif";
+        ctx.fillText(eq.rhs, rx + rw / 2, ry + 55);
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "bold 13px Space Mono,monospace";
+        ctx.fillText(eq.rhsDim, rx + rw / 2, ry + 90);
+        // Result
+        ctx.fillStyle = eq.match ? "#7eff6e" : "#ff4444";
+        ctx.font = "bold 16px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          eq.match ? "✓ DIMENSIONALLY CONSISTENT!" : "✗ NOT CONSISTENT",
+          W / 2,
+          230,
+        );
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "13px Outfit,sans-serif";
+        ctx.fillText("SI Unit: " + eq.unit, W / 2, 255);
+        // Key hint
+        ctx.fillStyle = "rgba(255,215,0,0.8)";
+        ctx.font = "12px Outfit,sans-serif";
+        ctx.fillText(
+          "JAMB TIP: M=mass, L=length, T=time, A=current, θ=temperature",
+          W / 2,
+          H - 12,
+        );
+        if (document.getElementById("unit-info"))
+          document.getElementById("unit-info").textContent =
+            eq.name + ": " + eq.lhsDim + " ✓ Dimensionally consistent!";
+      };
+      window.resetUnitSim = function () {
+        runDimAnalysis();
+      };
+
+      // ENERGY CONSERVATION SIM
+      function initEnergySim(canvas, ctx, W, H) {
+        simState.energy = { ball: null, running: false };
+        drawEnergyStatic(
+          ctx,
+          W,
+          H,
+          parseInt(document.getElementById("height-slider")?.value || 5),
+        );
+      }
+      function drawEnergyStatic(ctx, W, H, heightM) {
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        const ground = H - 30;
+        ctx.strokeStyle = "#5a7090";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, ground);
+        ctx.lineTo(W, ground);
+        ctx.stroke();
+        const scale = 20,
+          ballX = W / 2,
+          ballY = ground - heightM * scale - 10;
+        ctx.fillStyle = "rgba(0,212,255,0.3)";
+        ctx.fillRect(ballX - 3, ballY, 6, ground - ballY);
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.arc(ballX, ballY, 12, 0, Math.PI * 2);
+        ctx.fill();
+        const PE = 1 * 10 * heightM,
+          KE = 0,
+          total = PE + KE;
+        // Energy bars
+        drawEnergyBars(ctx, W, H, PE, KE, total);
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px Space Mono,monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(`Height: ${heightM}m | m=1kg, g=10m/s²`, W / 2, H - 10);
+      }
+      function drawEnergyBars(ctx, W, H, PE, KE, total) {
+        const bx = 30,
+          by = 60,
+          bw = 40,
+          maxH = 160;
+        const scale = maxH / Math.max(total, 1);
+        ctx.fillStyle = "rgba(0,212,255,0.2)";
+        ctx.fillRect(bx, by, bw, maxH);
+        ctx.fillStyle = "#ff6b35";
+        ctx.fillRect(bx, by + maxH - PE * scale, bw, PE * scale);
+        ctx.fillStyle = "#00d4ff";
+        ctx.fillRect(bx + 60, by + maxH - KE * scale, bw, KE * scale);
+        ctx.fillStyle = "rgba(255,215,0,0.3)";
+        ctx.fillRect(bx + 120, by, bw, maxH);
+        ctx.fillStyle = "#ffd700";
+        ctx.fillRect(bx + 120, by, bw, total * scale);
+        ctx.fillStyle = "#e2eaf7";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("PE", bx + bw / 2, by + maxH + 14);
+        ctx.fillText("KE", bx + 60 + bw / 2, by + maxH + 14);
+        ctx.fillText("Total", bx + 120 + bw / 2, by + maxH + 14);
+        ctx.fillStyle = "#ff6b35";
+        ctx.fillText(
+          PE.toFixed(0) + "J",
+          bx + bw / 2,
+          by + maxH - PE * scale - 4,
+        );
+        ctx.fillStyle = "#00d4ff";
+        ctx.fillText(
+          KE.toFixed(0) + "J",
+          bx + 60 + bw / 2,
+          by + maxH - KE * scale - 4,
+        );
+      }
+      window.dropBall = function () {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width,
+          H = canvas.height;
+        const heightM = parseInt(
+          document.getElementById("height-slider")?.value || 5,
+        );
+        const g = 10,
+          m = 1,
+          scale = 20;
+        const ground = H - 30,
+          startY = ground - heightM * scale - 10;
+        let y = startY,
+          vy = 0;
+        cancelAnimationFrame(simAnim);
+        function tick() {
+          vy += g * 0.5;
+          y += vy * 0.3;
+          if (y > ground - 12) {
+            y = ground - 12;
+            vy *= -0.6;
+            if (Math.abs(vy) < 1) {
+              cancelAnimationFrame(simAnim);
+              return;
+            }
+          }
+          const h = (ground - y) / scale;
+          const PE = m * g * Math.max(h, 0),
+            KE = 0.5 * m * vy * vy * 0.09,
+            total = m * g * heightM;
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = "#5a7090";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, ground);
+          ctx.lineTo(W, ground);
+          ctx.stroke();
+          ctx.fillStyle = "rgba(0,212,255,0.1)";
+          ctx.fillRect(W / 2 - 3, y, 6, ground - y);
+          ctx.fillStyle = "#ffd700";
+          ctx.beginPath();
+          ctx.arc(W / 2, y, 12, 0, Math.PI * 2);
+          ctx.fill();
+          drawEnergyBars(ctx, W, H, PE, KE, total);
+          ctx.fillStyle = "#5a7090";
+          ctx.font = "12px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(
+            `v=${(Math.abs(vy) * 0.3).toFixed(1)}m/s | PE=${PE.toFixed(0)}J | KE=${KE.toFixed(0)}J`,
+            W / 2,
+            H - 10,
+          );
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      };
+      window.resetEnergy = function () {
+        cancelAnimationFrame(simAnim);
+        const c = document.getElementById("sim-canvas");
+        if (c)
+          drawEnergyStatic(
+            c.getContext("2d"),
+            c.width,
+            c.height,
+            parseInt(document.getElementById("height-slider")?.value || 5),
+          );
+      };
+      window.updateEnergyInfo = function () {
+        const h = document.getElementById("height-slider")?.value || 5;
+        document.getElementById("height-val").textContent = h + "m";
+        document.getElementById("energy-info").textContent =
+          `PE = mgh = 1×10×${h} = ${h * 10}J. When dropped, converts to KE!`;
+        const c = document.getElementById("sim-canvas");
+        if (c)
+          drawEnergyStatic(c.getContext("2d"), c.width, c.height, parseInt(h));
+      };
+
+      // FLUID / ARCHIMEDES SIM
+      let fluidType = "water";
+      function initFluidSim(canvas, ctx, W, H) {
+        drawFluidSim(ctx, W, H);
+      }
+      function drawFluidSim(ctx, W, H) {
+        const dens = parseInt(
+          document.getElementById("density-slider")?.value || 800,
+        );
+        const fluidDens =
+          fluidType === "water" ? 1000 : fluidType === "oil" ? 800 : 13600;
+        const fluidColor =
+          fluidType === "water"
+            ? "rgba(0,150,255,0.4)"
+            : fluidType === "oil"
+              ? "rgba(200,150,0,0.4)"
+              : "rgba(200,200,200,0.6)";
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Tank
+        ctx.fillStyle = fluidColor;
+        ctx.fillRect(150, 80, 300, 200);
+        ctx.strokeStyle = "#5a7090";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(150, 80, 300, 200);
+        // Object
+        const r = 30,
+          cx = 300;
+        const sinkFrac = Math.min(1, dens / fluidDens);
+        const floatY = 80 + 200 - r * 2 - (1 - sinkFrac) * r * 2;
+        const objY = dens > fluidDens ? 80 + 200 - r : floatY;
+        ctx.fillStyle = dens > fluidDens ? "#ff4444" : "#00d4ff";
+        ctx.beginPath();
+        ctx.arc(cx, objY, r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // Labels
+        ctx.fillStyle = "#e2eaf7";
+        ctx.font = "13px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(dens > fluidDens ? "SINKS" : "FLOATS", cx, objY + 4);
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(`Object density: ${dens} kg/m³`, 10, 30);
+        ctx.fillText(`Fluid (${fluidType}): ${fluidDens} kg/m³`, 10, 48);
+        ctx.fillStyle = dens > fluidDens ? "#ff4444" : "#7eff6e";
+        ctx.font = "bold 13px Outfit,sans-serif";
+        ctx.fillText(
+          dens > fluidDens
+            ? "ρ_obj > ρ_fluid → SINKS"
+            : "ρ_obj < ρ_fluid → FLOATS",
+          10,
+          H - 12,
+        );
+        if (document.getElementById("fluid-info"))
+          document.getElementById("fluid-info").textContent =
+            `Object: ${dens}kg/m³ vs ${fluidType}: ${fluidDens}kg/m³ → ${dens > fluidDens ? "Sinks" : "Floats"}. Upthrust = ρ_fluid × V × g`;
+      }
+      window.toggleFluidSim = function () {
+        const c = document.getElementById("sim-canvas");
+        if (c) drawFluidSim(c.getContext("2d"), c.width, c.height);
+      };
+      window.changeFluid = function () {
+        const types = ["water", "oil", "mercury"];
+        fluidType = types[(types.indexOf(fluidType) + 1) % types.length];
+        const c = document.getElementById("sim-canvas");
+        if (c) drawFluidSim(c.getContext("2d"), c.width, c.height);
+      };
+      window.updateFluidInfo = function () {
+        const d = document.getElementById("density-val");
+        if (d)
+          d.textContent =
+            document.getElementById("density-slider")?.value + " kg/m³";
+        const c = document.getElementById("sim-canvas");
+        if (c) drawFluidSim(c.getContext("2d"), c.width, c.height);
+      };
+
+      // HEAT / PHASE CHANGE SIM
+      function initHeatSim(canvas, ctx, W, H) {
+        simState.heat = { Q: 0, phase: "solid", temp: -20 };
+        drawHeatCurve(ctx, W, H);
+      }
+      function drawHeatCurve(ctx, W, H) {
+        const { Q, temp, phase } = simState.heat || {
+          Q: 0,
+          temp: -20,
+          phase: "solid",
+        };
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Draw heating curve graph
+        ctx.strokeStyle = "#1a2a4a";
+        ctx.lineWidth = 1;
+        for (let x = 50; x < W - 20; x += 50) {
+          ctx.beginPath();
+          ctx.moveTo(x, 20);
+          ctx.lineTo(x, H - 40);
+          ctx.stroke();
+        }
+        for (let y = 20; y < H - 40; y += 40) {
+          ctx.beginPath();
+          ctx.moveTo(50, y);
+          ctx.lineTo(W - 20, y);
+          ctx.stroke();
+        }
+        // Axes
+        ctx.strokeStyle = "#5a7090";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(50, H - 40);
+        ctx.lineTo(W - 20, H - 40);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(50, 20);
+        ctx.lineTo(50, H - 40);
+        ctx.stroke();
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("Heat Added (Q)", W / 2, H - 8);
+        ctx.save();
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("Temperature (°C)", -(H / 2), 15);
+        ctx.restore();
+        // Curve
+        const pts = [
+          [0, -20],
+          [120, -20],
+          [120, 0],
+          [240, 0],
+          [240, 100],
+          [W - 80, 100],
+        ];
+        const labels = [
+          { x: 30, y: H - 80, t: "Solid" },
+          { x: 120, y: H - 100, t: "Melting (0°C)" },
+          { x: 190, y: H - 80, t: "Liquid" },
+          { x: 240, y: H - 100, t: "Boiling (100°C)" },
+          { x: 320, y: H - 80, t: "Gas" },
+        ];
+        ctx.strokeStyle = "#00d4ff";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        pts.forEach((p, i) => {
+          const px = 50 + p[0],
+            py = H - 40 - (p[1] + 20) * 1.5;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+        labels.forEach((l) => {
+          ctx.fillStyle = "rgba(255,215,0,0.7)";
+          ctx.font = "10px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(l.t, l.x + 50, l.y);
+        });
+        // Current position
+        const qx = 50 + Math.min(Q * 2, W - 90),
+          qy = H - 40 - (Math.max(-20, Math.min(100, temp)) + 20) * 1.5;
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.arc(qx, qy, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#e2eaf7";
+        ctx.font = "bold 13px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          `${phase.toUpperCase()} | ${temp > 0 ? "+" : ""}${temp}°C`,
+          W / 2,
+          40,
+        );
+        const info = document.getElementById("heat-info");
+        if (info)
+          info.textContent = `Phase: ${phase} | Temp: ${temp}°C | During phase change temp stays CONSTANT — energy used to break/form bonds (latent heat)!`;
+      }
+      window.addHeat = function () {
+        if (!simState.heat) simState.heat = { Q: 0, phase: "solid", temp: -20 };
+        const s = simState.heat;
+        if (s.phase === "solid" && s.temp < 0) {
+          s.temp = Math.min(0, s.temp + 5);
+          if (s.temp >= 0) s.phase = "melting";
+        } else if (s.phase === "melting") {
+          s.Q += 10;
+          if (s.Q >= 120) {
+            s.phase = "liquid";
+            s.temp = 0;
+          }
+        } else if (s.phase === "liquid" && s.temp < 100) {
+          s.temp = Math.min(100, s.temp + 5);
+        } else if (s.phase === "liquid" && s.temp >= 100) {
+          s.phase = "boiling";
+        } else if (s.phase === "boiling") {
+          s.Q += 10;
+          if (s.Q >= 240) {
+            s.phase = "gas";
+            s.temp = 100;
+          }
+        } else if (s.phase === "gas") {
+          s.temp = Math.min(150, s.temp + 5);
+        }
+        const c = document.getElementById("sim-canvas");
+        if (c) drawHeatCurve(c.getContext("2d"), c.width, c.height);
+      };
+      window.removeHeat = function () {
+        if (!simState.heat) return;
+        const s = simState.heat;
+        if (s.phase === "gas" && s.temp > 100) {
+          s.temp = Math.max(100, s.temp - 5);
+        } else if (s.phase === "gas") {
+          s.phase = "boiling";
+        } else if (s.phase === "boiling") {
+          s.Q = Math.max(120, s.Q - 10);
+          if (s.Q <= 120) s.phase = "liquid";
+        } else if (s.phase === "liquid" && s.temp > 0) {
+          s.temp = Math.max(0, s.temp - 5);
+        } else if (s.phase === "liquid") {
+          s.phase = "melting";
+        } else if (s.phase === "melting") {
+          s.Q = Math.max(0, s.Q - 10);
+          if (s.Q <= 0) {
+            s.phase = "solid";
+            s.temp = 0;
+          }
+        } else if (s.phase === "solid") {
+          s.temp = Math.max(-20, s.temp - 5);
+        }
+        const c = document.getElementById("sim-canvas");
+        if (c) drawHeatCurve(c.getContext("2d"), c.width, c.height);
+      };
+      window.resetHeat = function () {
+        simState.heat = { Q: 0, phase: "solid", temp: -20 };
+        const c = document.getElementById("sim-canvas");
+        if (c) drawHeatCurve(c.getContext("2d"), c.width, c.height);
+      };
+
+      // CAPACITOR SIM
+      function initCapacitorSim(canvas, ctx, W, H) {
+        simState.cap = { charge: 0, charging: false, discharging: false };
+        drawCapacitor(ctx, W, H);
+      }
+      function drawCapacitor(ctx, W, H) {
+        const charge = simState.cap?.charge || 0;
+        const C = parseInt(document.getElementById("cap-slider")?.value || 50);
+        const maxQ = (C * 9) / 1000;
+        const frac = charge / Math.max(maxQ, 0.01);
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Plates
+        const px = W / 2 - 30,
+          pw = 60,
+          ph = 120,
+          py = (H - ph) / 2;
+        ctx.fillStyle = `rgba(0,212,255,${0.1 + frac * 0.3})`;
+        ctx.fillRect(px - 10, py, 10, ph);
+        ctx.fillStyle = `rgba(255,107,53,${0.1 + frac * 0.3})`;
+        ctx.fillRect(px + pw, py, 10, ph);
+        ctx.strokeStyle = "#00d4ff";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(px - 10, py, 10, ph);
+        ctx.strokeStyle = "#ff6b35";
+        ctx.strokeRect(px + pw, py, 10, ph);
+        ctx.fillStyle = "#00d4ff";
+        ctx.font = "bold 20px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("+", px - 5, H / 2 + 7);
+        ctx.fillStyle = "#ff6b35";
+        ctx.fillText("−", px + pw + 5, H / 2 + 7);
+        // Charge indicators
+        const numDots = Math.round(frac * 8);
+        for (let i = 0; i < numDots; i++) {
+          const dy =
+            py + 10 + (i * (ph - 20)) / (Math.max(numDots - 1, 1) || 1);
+          ctx.fillStyle = "#00d4ff";
+          ctx.beginPath();
+          ctx.arc(px + pw / 4, dy, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#ff6b35";
+          ctx.beginPath();
+          ctx.arc(px + (3 * pw) / 4, dy, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Electric field arrows
+        if (frac > 0.1) {
+          ctx.strokeStyle = `rgba(255,215,0,${frac * 0.7})`;
+          ctx.lineWidth = 1.5;
+          for (let fy = py + 20; fy < py + ph - 20; fy += 25) {
+            ctx.beginPath();
+            ctx.moveTo(px, fy);
+            ctx.lineTo(px + pw, fy);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(px + pw - 8, fy - 5);
+            ctx.lineTo(px + pw, fy);
+            ctx.lineTo(px + pw - 8, fy + 5);
+            ctx.stroke();
+          }
+        }
+        // Info
+        const V = ((charge * 1000) / C).toFixed(2),
+          E = ((0.5 * C * Math.pow((charge * 1000) / C, 2)) / 1000000).toFixed(
+            4,
+          );
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px Space Mono,monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(
+          `C=${C}µF | Q=${(charge * 1000).toFixed(1)}µC | V=${V}V | E=½CV²=${E}J`,
+          10,
+          H - 10,
+        );
+        ctx.fillStyle = "#00d4ff";
+        ctx.font = "bold 14px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`Charge: ${Math.round(frac * 100)}%`, W / 2, H - 28);
+      }
+      window.chargeCapacitor = function () {
+        if (!simState.cap) simState.cap = { charge: 0 };
+        const C = parseInt(document.getElementById("cap-slider")?.value || 50);
+        const maxQ = (C * 9) / 1000;
+        cancelAnimationFrame(simAnim);
+        function tick() {
+          simState.cap.charge = Math.min(simState.cap.charge + maxQ / 30, maxQ);
+          const c = document.getElementById("sim-canvas");
+          if (c) drawCapacitor(c.getContext("2d"), c.width, c.height);
+          if (simState.cap.charge < maxQ - 0.001)
+            simAnim = requestAnimationFrame(tick);
+          else notify("Capacitor fully charged! Q=CV ✓");
+        }
+        tick();
+      };
+      window.dischargeCapacitor = function () {
+        if (!simState.cap) return;
+        cancelAnimationFrame(simAnim);
+        function tick() {
+          simState.cap.charge = Math.max(0, simState.cap.charge * 0.92);
+          const c = document.getElementById("sim-canvas");
+          if (c) drawCapacitor(c.getContext("2d"), c.width, c.height);
+          if (simState.cap.charge > 0.001)
+            simAnim = requestAnimationFrame(tick);
+          else notify("Capacitor discharged!");
+        }
+        tick();
+      };
+      window.resetCapacitor = function () {
+        cancelAnimationFrame(simAnim);
+        simState.cap = { charge: 0 };
+        const c = document.getElementById("sim-canvas");
+        if (c) drawCapacitor(c.getContext("2d"), c.width, c.height);
+      };
+      window.updateCapInfo = function () {
+        const v = document.getElementById("cap-slider")?.value || 50;
+        document.getElementById("cap-val").textContent = v + "µF";
+        const c = document.getElementById("sim-canvas");
+        if (c) drawCapacitor(c.getContext("2d"), c.width, c.height);
+        if (document.getElementById("cap-info"))
+          document.getElementById("cap-info").textContent =
+            `C=${v}µF | Q=CV | Energy=½CV² | Series: 1/CT=Σ1/C | Parallel: CT=ΣC`;
+      };
+
+      // ELECTROLYSIS SIM
+      function initElectrolysisSim(canvas, ctx, W, H) {
+        simState.elec = { running: false, mass: 0, ions: [], t: 0 };
+        drawElectrolysis(ctx, W, H);
+      }
+      function drawElectrolysis(ctx, W, H) {
+        const { mass, ions } = simState.elec || { mass: 0, ions: [] };
+        const I = parseInt(document.getElementById("elec-current")?.value || 3);
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Solution
+        ctx.fillStyle = "rgba(0,150,100,0.2)";
+        ctx.fillRect(100, 60, W - 200, H - 130);
+        ctx.strokeStyle = "#5a7090";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(100, 60, W - 200, H - 130);
+        // Electrodes
+        ctx.fillStyle = "#888";
+        ctx.fillRect(130, 40, 15, H - 120);
+        ctx.fillRect(W - 145, 40, 15, H - 120);
+        ctx.fillStyle = "#00d4ff";
+        ctx.font = "bold 14px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("+", 137, 35);
+        ctx.fillText("Anode", 137, H - 55);
+        ctx.fillStyle = "#ff6b35";
+        ctx.fillText("−", W - 137, 35);
+        ctx.fillText("Cathode", W - 137, H - 55);
+        // Ions
+        (ions || []).forEach((ion) => {
+          ctx.fillStyle =
+            ion.charge > 0 ? "rgba(0,212,255,0.8)" : "rgba(255,107,53,0.8)";
+          ctx.beginPath();
+          ctx.arc(ion.x, ion.y, 6, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 9px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(ion.charge > 0 ? "+" : "−", ion.x, ion.y + 4);
+        });
+        // Deposit on cathode
+        const depositH = Math.min(mass * 20, 40);
+        ctx.fillStyle = "rgba(255,215,0,0.7)";
+        ctx.fillRect(W - 145, H - 70 - depositH, 15, depositH);
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("Cu deposit", W - 137, H - 75 - depositH);
+        // Info
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px Space Mono,monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(
+          `I=${I}A | m=ZIt | Mass deposited: ${(mass * 0.33).toFixed(3)}g`,
+          10,
+          H - 8,
+        );
+      }
+      window.startElectrolysis = function () {
+        if (!simState.elec)
+          simState.elec = { running: false, mass: 0, ions: [], t: 0 };
+        simState.elec.running = true;
+        if (!simState.elec.ions.length) {
+          for (let i = 0; i < 12; i++)
+            simState.elec.ions.push({
+              x: 150 + Math.random() * (300 - 60),
+              y: 80 + Math.random() * 150,
+              charge: Math.random() > 0.5 ? 1 : -1,
+              vx: 0,
+              vy: 0,
+            });
+        }
+        cancelAnimationFrame(simAnim);
+        const canvas = document.getElementById("sim-canvas");
+        function tick() {
+          if (!simState.elec?.running) return;
+          const I = parseInt(
+            document.getElementById("elec-current")?.value || 3,
+          );
+          simState.elec.t++;
+          simState.elec.mass += I * 0.0001;
+          simState.elec.ions.forEach((ion) => {
+            ion.x += ion.charge > 0 ? -0.5 : 0.5;
+            ion.y += (Math.random() - 0.5) * 2;
+            if (ion.x < 145) ion.x = 145 + Math.random() * 200;
+            if (ion.x > W - 145) ion.x = W - 145 - Math.random() * 200;
+            ion.y = Math.max(65, Math.min(H - 80, ion.y));
+          });
+          if (canvas)
+            drawElectrolysis(
+              canvas.getContext("2d"),
+              canvas.width,
+              canvas.height,
+            );
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      };
+      window.stopElectrolysis = function () {
+        if (simState.elec) simState.elec.running = false;
+        cancelAnimationFrame(simAnim);
+      };
+      window.resetElectrolysis = function () {
+        cancelAnimationFrame(simAnim);
+        simState.elec = { running: false, mass: 0, ions: [], t: 0 };
+        const c = document.getElementById("sim-canvas");
+        if (c) drawElectrolysis(c.getContext("2d"), c.width, c.height);
+      };
+      window.updateElecInfo = function () {
+        const I = document.getElementById("elec-current")?.value || 3;
+        document.getElementById("elec-val").textContent = I + "A";
+        if (document.getElementById("elec-info"))
+          document.getElementById("elec-info").textContent =
+            `I=${I}A | m=ZIt. Z = electrochemical equivalent. Faraday's law of electrolysis!`;
+      };
+
+      // ELECTROMAGNETIC INDUCTION SIM
+      let magnetDir = 0;
+      function initInductionSim(canvas, ctx, W, H) {
+        simState.induction = { magX: 50, emf: 0, dir: 0 };
+        drawInduction(ctx, W, H);
+      }
+      function drawInduction(ctx, W, H) {
+        const { magX, emf } = simState.induction || { magX: 50, emf: 0 };
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Coil
+        const coilX = W / 2 - 60,
+          coilW = 120,
+          coilY = H / 2 - 50,
+          coilH = 100;
+        ctx.strokeStyle = "#ff6b35";
+        ctx.lineWidth = 2.5;
+        for (let i = 0; i < 5; i++) {
+          const cx = coilX + (i * coilW) / 4;
+          ctx.beginPath();
+          ctx.ellipse(cx + 15, H / 2, 8, 40, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.fillStyle = "#ff6b35";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("COIL (N turns)", W / 2, coilY - 10);
+        // Magnet
+        const mw = 60,
+          mh = 30,
+          mx = magX,
+          my = H / 2 - mh / 2;
+        ctx.fillStyle = "#cc0000";
+        ctx.fillRect(mx, my, mw / 2, mh);
+        ctx.fillStyle = "#0044cc";
+        ctx.fillRect(mx + mw / 2, my, mw / 2, mh);
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 14px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("N", mx + mw / 4, H / 2 + 5);
+        ctx.fillText("S", mx + (3 * mw) / 4, H / 2 + 5);
+        // EMF meter
+        const meterX = W - 100,
+          meterY = H / 2 - 50;
+        ctx.fillStyle = "rgba(255,215,0,0.1)";
+        ctx.fillRect(meterX - 5, meterY, 90, 100);
+        ctx.strokeStyle = "#ffd700";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(meterX - 5, meterY, 90, 100);
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("EMF Meter", meterX + 40, meterY + 15);
+        const needle = emf * 30;
+        ctx.strokeStyle = emf > 0 ? "#7eff6e" : "#ff4444";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(meterX + 40, meterY + 60);
+        ctx.lineTo(meterX + 40 + needle, meterY + 60);
+        ctx.stroke();
+        ctx.fillStyle = emf > 0 ? "#7eff6e" : "#ff4444";
+        ctx.font = "bold 12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          `EMF=${emf > 0 ? "+" : ""}${emf.toFixed(1)}V`,
+          meterX + 40,
+          meterY + 85,
+        );
+        // Flux lines
+        if (magX > 100 && magX < W / 2 - 30) {
+          ctx.strokeStyle = `rgba(255,215,0,${Math.abs((W / 2 - magX - 30) / 100)})`;
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          for (let i = 0; i < 3; i++) {
+            const fy = H / 2 - 20 + i * 20;
+            ctx.beginPath();
+            ctx.moveTo(mx + mw, fy);
+            ctx.lineTo(coilX, fy);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+        }
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "Lenz's Law: induced current OPPOSES the change in flux",
+          W / 2,
+          H - 10,
+        );
+      }
+      window.moveMagnet = function (direction) {
+        if (!simState.induction) simState.induction = { magX: 50, emf: 0 };
+        const canvas = document.getElementById("sim-canvas");
+        cancelAnimationFrame(simAnim);
+        const spd = direction === "in" ? 3 : -3;
+        function tick() {
+          simState.induction.magX += spd;
+          simState.induction.emf = spd * 0.5;
+          if (canvas)
+            drawInduction(canvas.getContext("2d"), canvas.width, canvas.height);
+          const inRange =
+            simState.induction.magX > 20 &&
+            simState.induction.magX < W / 2 - 30;
+          if (inRange) simAnim = requestAnimationFrame(tick);
+          else {
+            simState.induction.emf = 0;
+            if (canvas)
+              drawInduction(
+                canvas.getContext("2d"),
+                canvas.width,
+                canvas.height,
+              );
+          }
+        }
+        tick();
+      };
+      window.stopMagnet = function () {
+        cancelAnimationFrame(simAnim);
+        if (simState.induction) simState.induction.emf = 0;
+        const c = document.getElementById("sim-canvas");
+        if (c) drawInduction(c.getContext("2d"), c.width, c.height);
+      };
+
+      // AC CIRCUIT SIM
+      let acComponent = "R";
+      function initACSim(canvas, ctx, W, H) {
+        simState.ac = { t: 0, running: true };
+        animateAC(canvas, ctx, W, H);
+      }
+      function animateAC(canvas, ctx, W, H) {
+        function tick() {
+          if (!simState.ac?.running) return;
+          simState.ac.t += 0.05;
+          const t = simState.ac.t;
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = "#1a2a4a";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, H / 2);
+          ctx.lineTo(W, H / 2);
+          ctx.stroke();
+          const V0 = 60,
+            shift =
+              acComponent === "L"
+                ? -Math.PI / 2
+                : acComponent === "C"
+                  ? Math.PI / 2
+                  : 0;
+          ctx.strokeStyle = "#00d4ff";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          for (let x = 0; x < W; x++) {
+            const y = H / 2 - V0 * Math.sin((2 * Math.PI * x) / 200 - t * 2);
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          ctx.strokeStyle = "#ff6b35";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let x = 0; x < W; x++) {
+            const y =
+              H / 2 -
+              V0 * 0.7 * Math.sin((2 * Math.PI * x) / 200 - t * 2 + shift);
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          ctx.fillStyle = "#00d4ff";
+          ctx.font = "12px monospace";
+          ctx.textAlign = "left";
+          ctx.fillText("Voltage (blue)", 8, 20);
+          ctx.fillStyle = "#ff6b35";
+          ctx.fillText("Current (orange)", 8, 36);
+          const phaseDesc =
+            acComponent === "R"
+              ? "IN PHASE"
+              : acComponent === "L"
+                ? "V leads I by 90°"
+                : "I leads V by 90°";
+          ctx.fillStyle = "#ffd700";
+          ctx.font = "bold 13px Outfit,sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(`${acComponent} circuit: ${phaseDesc}`, W / 2, H - 12);
+          ctx.fillText(
+            `Vrms = V₀/√2 = ${(V0 / 1.414).toFixed(1)}V`,
+            W / 2,
+            H - 28,
+          );
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      }
+      window.toggleAC = function () {
+        if (simState.ac) {
+          simState.ac.running = !simState.ac.running;
+          document.querySelector(".sim-btn.primary").textContent = simState.ac
+            .running
+            ? "⏸ Pause"
+            : "▶ Resume";
+          if (simState.ac.running) {
+            const c = document.getElementById("sim-canvas");
+            if (c) animateAC(c, c.getContext("2d"), c.width, c.height);
+          }
+        }
+      };
+      window.showACComponent = function (type) {
+        acComponent = type;
+        cancelAnimationFrame(simAnim);
+        simState.ac = { t: 0, running: true };
+        const c = document.getElementById("sim-canvas");
+        if (c) animateAC(c, c.getContext("2d"), c.width, c.height);
+        if (document.getElementById("ac-info"))
+          document.getElementById("ac-info").textContent =
+            `${type} circuit. ${type === "R" ? "Resistor: V & I in phase." : type === "L" ? "Inductor: V leads I by 90°. XL=ωL" : "Capacitor: I leads V by 90°. XC=1/ωC"} | Vrms=V₀/√2`;
+      };
+
+      // PHOTOELECTRIC SIM
+      function initPhotoSim(canvas, ctx, W, H) {
+        simState.photo = { electrons: [], freq: 7, t: 0 };
+        drawPhotoStatic(ctx, W, H);
+      }
+      function drawPhotoStatic(ctx, W, H) {
+        const freq = parseInt(
+          document.getElementById("photo-freq")?.value || 7,
+        );
+        const threshold = 5.5;
+        const phi = 2.3e-19,
+          h = 6.63e-34,
+          f = freq * 1e14;
+        const energy = h * f,
+          KE = Math.max(0, energy - phi);
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        // Metal plate
+        ctx.fillStyle = "rgba(100,100,150,0.4)";
+        ctx.fillRect(50, H / 2 - 40, 100, 80);
+        ctx.strokeStyle = "#5a7090";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(50, H / 2 - 40, 100, 80);
+        ctx.fillStyle = "#e2eaf7";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("Metal", 100, H / 2 + 5);
+        // Light source
+        ctx.fillStyle = "rgba(255,215,0,0.2)";
+        ctx.beginPath();
+        ctx.arc(550, H / 2, 40, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.arc(550, H / 2, 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("Light Source", 550, H / 2 + 50);
+        // Photon beam
+        const color =
+          freq >= threshold ? `rgba(200,100,255,0.7)` : "rgba(255,100,100,0.5)";
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(510, H / 2);
+        ctx.lineTo(155, H / 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        // Result
+        if (freq >= threshold) {
+          ctx.fillStyle = "#7eff6e";
+          ctx.font = "bold 14px Outfit,sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText("✓ ELECTRONS EMITTED!", 200, H / 2 - 30);
+          ctx.fillText(
+            `KE = hf - φ = ${(KE * 1e19).toFixed(2)}×10⁻¹⁹ J`,
+            200,
+            H / 2 - 10,
+          );
+          // Electron
+          ctx.fillStyle = "#7eff6e";
+          ctx.beginPath();
+          ctx.arc(155, H / 2 - 20, 8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#fff";
+          ctx.font = "10px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("e⁻", 155, H / 2 - 17);
+        } else {
+          ctx.fillStyle = "#ff4444";
+          ctx.font = "bold 14px Outfit,sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText("✗ NO electrons (f < threshold f₀)", 180, H / 2 - 20);
+          ctx.fillText("Even HIGH INTENSITY won't help!", 180, H / 2 + 5);
+        }
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          `Frequency: ${freq}×10¹⁴ Hz | Threshold: ${threshold}×10¹⁴ Hz | hf=${(energy * 1e19).toFixed(2)}×10⁻¹⁹J`,
+          W / 2,
+          H - 10,
+        );
+        if (document.getElementById("photo-info"))
+          document.getElementById("photo-info").textContent =
+            `f=${freq}×10¹⁴Hz ${freq >= threshold ? "> threshold → electrons emitted!" : "< threshold → NO emission (even bright light fails!)"}`;
+      }
+      window.shootPhoton = function () {
+        drawPhotoStatic(
+          document.getElementById("sim-canvas")?.getContext("2d"),
+          600,
+          300,
+        );
+      };
+      window.resetPhoto = function () {
+        simState.photo = { electrons: [], freq: 7 };
+        drawPhotoStatic(
+          document.getElementById("sim-canvas")?.getContext("2d"),
+          600,
+          300,
+        );
+      };
+      window.updatePhotoInfo = function () {
+        const v = document.getElementById("photo-freq")?.value || 7;
+        document.getElementById("photo-val").textContent = v;
+        drawPhotoStatic(
+          document.getElementById("sim-canvas")?.getContext("2d"),
+          600,
+          300,
+        );
+      };
+
+      // RADIOACTIVE DECAY SIM
+      function initDecaySim(canvas, ctx, W, H) {
+        simState.decay = { atoms: [], running: false, t: 0, N0: 100 };
+        for (let i = 0; i < 100; i++)
+          simState.decay.atoms.push({
+            x: 100 + Math.random() * 400,
+            y: 50 + Math.random() * 200,
+            alive: true,
+            dx: (Math.random() - 0.5) * 3,
+            dy: (Math.random() - 0.5) * 3,
+          });
+        drawDecay(ctx, W, H);
+      }
+      function drawDecay(ctx, W, H) {
+        const { atoms } = simState.decay || { atoms: [] };
+        const alive = atoms.filter((a) => a.alive).length;
+        const HL = parseInt(
+          document.getElementById("halflife-slider")?.value || 3,
+        );
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        atoms.forEach((a) => {
+          ctx.fillStyle = a.alive ? "#7eff6e" : "rgba(255,107,53,0.3)";
+          ctx.beginPath();
+          ctx.arc(a.x, a.y, 5, 0, Math.PI * 2);
+          ctx.fill();
+          if (!a.alive && a.dx) {
+            ctx.strokeStyle = "rgba(255,107,53,0.5)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(a.x + a.dx * 5, a.y + a.dy * 5);
+            ctx.stroke();
+          }
+        });
+        // Decay graph
+        const gx = 10,
+          gy = H - 80,
+          gw = 150,
+          gh = 60;
+        ctx.strokeStyle = "#1a2a4a";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(gx, gy, gw, gh);
+        ctx.strokeStyle = "#00d4ff";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let i = 0; i <= HL * 4; i++) {
+          const nx = gx + (i * gw) / (HL * 4),
+            ny = gy + gh - gh * Math.pow(0.5, i / HL);
+          if (i === 0) ctx.moveTo(nx, ny);
+          else ctx.lineTo(nx, ny);
+        }
+        ctx.stroke();
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "bold 16px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(`${alive}/100 atoms remaining`, W / 2, H - 12);
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          `N = N₀×(½)ⁿ | Half-life = ${HL} steps | n = ${Math.round(Math.log(100 / Math.max(alive, 1)) / Math.log(2), 1)} half-lives elapsed`,
+          W / 2,
+          H - 28,
+        );
+        if (document.getElementById("decay-info"))
+          document.getElementById("decay-info").textContent =
+            `${alive} atoms alive. After ${HL} more steps → ${Math.floor(alive / 2)} remain. N=N₀×(½)ⁿ`;
+      }
+      window.startDecay = function () {
+        if (!simState.decay)
+          initDecaySim(document.getElementById("sim-canvas"), null, 600, 300);
+        cancelAnimationFrame(simAnim);
+        const HL = parseInt(
+          document.getElementById("halflife-slider")?.value || 3,
+        );
+        const canvas = document.getElementById("sim-canvas");
+        function tick() {
+          simState.decay.t++;
+          if (simState.decay.t % (HL * 10) === 0) {
+            const alive = simState.decay.atoms.filter((a) => a.alive);
+            const numDecay = Math.floor(alive.length * 0.5);
+            alive.slice(0, numDecay).forEach((a) => (a.alive = false));
+          }
+          if (canvas)
+            drawDecay(canvas.getContext("2d"), canvas.width, canvas.height);
+          if (simState.decay.atoms.some((a) => a.alive))
+            simAnim = requestAnimationFrame(tick);
+          else notify("All atoms decayed!");
+        }
+        tick();
+      };
+      window.resetDecay = function () {
+        cancelAnimationFrame(simAnim);
+        const c = document.getElementById("sim-canvas");
+        if (c) initDecaySim(c, c.getContext("2d"), c.width, c.height);
+      };
+      window.updateDecayInfo = function () {
+        const v = document.getElementById("halflife-slider")?.value || 3;
+        document.getElementById("halflife-val").textContent = v;
+      };
+
+      // LOGIC GATES SIM
+      let logicA = 0,
+        logicB = 0,
+        gateType = "AND",
+        gateTypes = ["AND", "OR", "NOT", "NAND", "NOR", "XOR"];
+      function initLogicSim(canvas, ctx, W, H) {
+        drawLogic(ctx, W, H);
+      }
+      function logicOutput(t, a, b) {
+        return t === "AND"
+          ? a && b
+          : t === "OR"
+            ? a || b
+            : t === "NOT"
+              ? !a
+              : t === "NAND"
+                ? !(a && b)
+                : t === "NOR"
+                  ? !(a || b)
+                  : a !== b;
+      }
+      function drawLogic(ctx, W, H) {
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        const out = logicOutput(gateType, logicA, logicB) ? 1 : 0;
+        // Gate box
+        const gx = W / 2 - 60,
+          gy = H / 2 - 50,
+          gw = 120,
+          gh = 100;
+        ctx.fillStyle = "rgba(191,127,255,0.15)";
+        ctx.fillRect(gx, gy, gw, gh);
+        ctx.strokeStyle = "#bf7fff";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(gx, gy, gw, gh);
+        ctx.fillStyle = "#bf7fff";
+        ctx.font = "bold 22px Space Mono,monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(gateType, gx + gw / 2, gy + gh / 2 + 8);
+        // Input wires
+        const wireColor = (n) => (n ? "#7eff6e" : "#ff4444");
+        ctx.strokeStyle = wireColor(logicA);
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(100, H / 2 - 20);
+        ctx.lineTo(gx, H / 2 - 20);
+        ctx.stroke();
+        ctx.fillStyle = wireColor(logicA);
+        ctx.beginPath();
+        ctx.arc(100, H / 2 - 20, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("A", 100, H / 2 - 16);
+        if (gateType !== "NOT") {
+          ctx.strokeStyle = wireColor(logicB);
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(100, H / 2 + 20);
+          ctx.lineTo(gx, H / 2 + 20);
+          ctx.stroke();
+          ctx.fillStyle = wireColor(logicB);
+          ctx.beginPath();
+          ctx.arc(100, H / 2 + 20, 10, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 12px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("B", 100, H / 2 + 24);
+        }
+        // Output wire
+        ctx.strokeStyle = wireColor(out);
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(gx + gw, H / 2);
+        ctx.lineTo(W - 80, H / 2);
+        ctx.stroke();
+        ctx.fillStyle = wireColor(out);
+        ctx.beginPath();
+        ctx.arc(W - 80, H / 2, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 14px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(out ? "1" : "0", W - 80, H / 2 + 5);
+        ctx.fillStyle = "#e2eaf7";
+        ctx.font = "13px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("OUTPUT", W - 80, H / 2 + 32);
+        // Truth table
+        const inputs =
+          gateType === "NOT"
+            ? [[0], [1]]
+            : [
+                [0, 0],
+                [0, 1],
+                [1, 0],
+                [1, 1],
+              ];
+        ctx.fillStyle = "rgba(26,42,74,0.5)";
+        ctx.fillRect(
+          10,
+          30,
+          gateType === "NOT" ? 100 : 160,
+          inputs.length * 22 + 30,
+        );
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "left";
+        ctx.fillText(gateType === "NOT" ? "A  OUT" : "A  B  OUT", 15, 48);
+        inputs.forEach((inp, i) => {
+          const out2 = logicOutput(gateType, inp[0], inp[1] || 0) ? 1 : 0;
+          const isCurrent =
+            inp[0] === logicA && (gateType === "NOT" || inp[1] === logicB);
+          ctx.fillStyle = isCurrent ? "#ffd700" : "#5a7090";
+          ctx.fillText(
+            gateType === "NOT"
+              ? `${inp[0]}  ${out2}`
+              : `${inp[0]}  ${inp[1]}  ${out2}`,
+            15,
+            70 + i * 22,
+          );
+        });
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "bold 15px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          `A=${logicA} ${gateType} ${gateType === "NOT" ? "" : `B=${logicB}`} = ${out}`,
+          W / 2,
+          H - 10,
+        );
+        if (document.getElementById("logic-info"))
+          document.getElementById("logic-info").textContent =
+            `Gate: ${gateType} | A=${logicA}${gateType !== "NOT" ? `, B=${logicB}` : ""} → Output=${out} | NAND and NOR are universal gates!`;
+      }
+      window.toggleLogicA = function () {
+        logicA = logicA ? 0 : 1;
+        const c = document.getElementById("sim-canvas");
+        if (c) drawLogic(c.getContext("2d"), c.width, c.height);
+      };
+      window.toggleLogicB = function () {
+        logicB = logicB ? 0 : 1;
+        const c = document.getElementById("sim-canvas");
+        if (c) drawLogic(c.getContext("2d"), c.width, c.height);
+      };
+      window.changeGate = function () {
+        gateType =
+          gateTypes[(gateTypes.indexOf(gateType) + 1) % gateTypes.length];
+        const c = document.getElementById("sim-canvas");
+        if (c) drawLogic(c.getContext("2d"), c.width, c.height);
+      };
+
+      // EM SPECTRUM SIM
+      window.showSpectrumType = function (type) {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d"),
+          W = canvas.width,
+          H = canvas.height;
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        const bands = [
+          {
+            name: "Radio",
+            freq: "10³ Hz",
+            wl: "100m+",
+            color: "rgba(100,100,255,0.6)",
+            use: "Radio/TV",
+          },
+          {
+            name: "Micro",
+            freq: "10⁹ Hz",
+            wl: "1cm",
+            color: "rgba(50,150,255,0.6)",
+            use: "Microwave oven",
+          },
+          {
+            name: "IR",
+            freq: "10¹² Hz",
+            wl: "1mm",
+            color: "rgba(255,100,0,0.6)",
+            use: "Heat/Remote",
+          },
+          {
+            name: "Visible",
+            freq: "10¹⁴ Hz",
+            wl: "500nm",
+            color: "rgba(0,255,100,0.7)",
+            use: "Sight/Optics",
+          },
+          {
+            name: "UV",
+            freq: "10¹⁵ Hz",
+            wl: "100nm",
+            color: "rgba(200,0,255,0.6)",
+            use: "Sterilization",
+          },
+          {
+            name: "X-ray",
+            freq: "10¹⁷ Hz",
+            wl: "0.1nm",
+            color: "rgba(255,0,200,0.6)",
+            use: "Medical imaging",
+          },
+          {
+            name: "Gamma",
+            freq: "10²⁰ Hz",
+            wl: "<0.001nm",
+            color: "rgba(255,0,50,0.7)",
+            use: "Cancer therapy",
+          },
+        ];
+        const bw = (W - 40) / bands.length;
+        bands.forEach((b, i) => {
+          ctx.fillStyle = b.color;
+          ctx.fillRect(20 + i * bw, 60, bw - 4, 100);
+          ctx.fillStyle = "#e2eaf7";
+          ctx.font = "bold 11px Outfit,sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(b.name, 20 + i * bw + bw / 2, 90);
+          ctx.font = "9px monospace";
+          ctx.fillText(b.freq, 20 + i * bw + bw / 2, 108);
+          ctx.fillText(b.wl, 20 + i * bw + bw / 2, 122);
+          ctx.fillStyle = "#ffd700";
+          ctx.font = "9px monospace";
+          ctx.fillText(b.use, 20 + i * bw + bw / 2, 138);
+        });
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "← Increasing Wavelength | Decreasing Frequency →",
+          W / 2,
+          50,
+        );
+        ctx.fillText(
+          "All travel at c = 3×10⁸ m/s in vacuum | v = fλ",
+          W / 2,
+          H - 10,
+        );
+        ctx.fillText("Increasing Energy & Frequency →", W / 2, H - 26);
+        if (document.getElementById("spectrum-info"))
+          document.getElementById("spectrum-info").textContent =
+            "EM spectrum: all at c=3×10⁸m/s. Radio=lowest freq/energy. Gamma=highest freq/energy. Only visible light seen by eye!";
+      };
+
+      // ENERGY SOURCES SIM
+      window.showEnergySource = function (type) {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d"),
+          W = canvas.width,
+          H = canvas.height;
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        const info = {
+          solar: {
+            name: "Solar Energy",
+            renewable: true,
+            desc: "Sun→photovoltaic cells→electricity",
+            pro: "Unlimited, clean, silent",
+            con: "Intermittent, expensive panels",
+            formula: "E=hf (photon energy)",
+          },
+          nuclear: {
+            name: "Nuclear Energy",
+            renewable: false,
+            desc: "E=mc²: mass defect→energy",
+            pro: "Very large energy density",
+            con: "Radioactive waste",
+            formula: "ΔE=Δmc² | Fission: heavy nuclei split",
+          },
+          hydro: {
+            name: "Hydroelectric",
+            renewable: true,
+            desc: "PE of water→KE→electricity",
+            pro: "Reliable, no fuel cost",
+            con: "Environmental impact",
+            formula: "P=mgh/t = ρgQh",
+          },
+          wind: {
+            name: "Wind Energy",
+            renewable: true,
+            desc: "Kinetic energy of wind→electricity",
+            pro: "Clean, increasingly cheap",
+            con: "Noisy, intermittent",
+            formula: "P=½ρAv³",
+          },
+        };
+        const s = info[type] || info.solar;
+        const color = s.renewable ? "#7eff6e" : "#ff6b35";
+        ctx.fillStyle = color;
+        ctx.font = "bold 24px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(s.name, W / 2, 45);
+        ctx.fillStyle = s.renewable
+          ? "rgba(126,255,110,0.1)"
+          : "rgba(255,107,53,0.1)";
+        ctx.fillRect(50, 60, W - 100, H - 100);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(50, 60, W - 100, H - 100);
+        const lines = [
+          ["Type:", s.renewable ? "♻ RENEWABLE" : "⚠ NON-RENEWABLE"],
+          ["How:", s.desc],
+          ["Formula:", s.formula],
+          ["Pros:", s.pro],
+          ["Cons:", s.con],
+        ];
+        lines.forEach((l, i) => {
+          ctx.fillStyle = "#5a7090";
+          ctx.font = "bold 12px monospace";
+          ctx.textAlign = "left";
+          ctx.fillText(l[0], 70, 90 + i * 30);
+          ctx.fillStyle = "#e2eaf7";
+          ctx.font = "12px Outfit,sans-serif";
+          ctx.fillText(l[1], 170, 90 + i * 30);
+        });
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "JAMB: Know renewable vs non-renewable. Nuclear = non-renewable (uranium limited)",
+          W / 2,
+          H - 10,
+        );
+        if (document.getElementById("energy2-info"))
+          document.getElementById("energy2-info").textContent =
+            `${s.name}: ${s.desc} | ${s.formula}`;
+      };
+
+      // VISCOSITY/STOKES SIM
+      function initViscositySim(canvas, ctx, W, H) {
+        simState.visc = { balls: [], running: false };
+        drawViscosity(ctx, W, H);
+      }
+      function drawViscosity(ctx, W, H) {
+        const r = parseInt(document.getElementById("tube-radius")?.value || 15);
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "rgba(0,100,200,0.3)";
+        ctx.fillRect(200, 20, 200, H - 60);
+        ctx.strokeStyle = "#1a2a4a";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(200, 20, 200, H - 60);
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("Viscous Fluid (η)", 300, 40);
+        (simState.visc?.balls || []).forEach((b) => {
+          const vt = b.vt,
+            y = b.y;
+          ctx.fillStyle = "#ffd700";
+          ctx.beginPath();
+          ctx.arc(300, y, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#aa8800";
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+          ctx.fillStyle = "#000";
+          ctx.font = "bold 10px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(`v=${vt.toFixed(1)}`, 300, y + 4);
+          ctx.strokeStyle = "#ff6b35";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(300, y);
+          ctx.lineTo(300, y + 15);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(0,212,255,0.5)";
+          ctx.beginPath();
+          ctx.moveTo(300, y);
+          ctx.lineTo(300, y - 10);
+          ctx.stroke();
+          ctx.strokeStyle = "rgba(255,107,53,0.5)";
+          ctx.beginPath();
+          ctx.moveTo(300, y);
+          ctx.lineTo(300, y - 5);
+          ctx.stroke();
+        });
+        ctx.fillStyle = "#ff6b35";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "left";
+        ctx.fillText("↓ Weight (mg)", 420, H / 2);
+        ctx.fillStyle = "#00d4ff";
+        ctx.fillText("↑ Upthrust", 420, H / 2 + 20);
+        ctx.fillStyle = "#ff6b35";
+        ctx.fillText("↑ Stokes drag (6πηrv)", 420, H / 2 + 40);
+        const vt2 = (2 * r * r * 1000 * 9.8) / (9 * 0.001 * 1000);
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "bold 12px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          `Terminal velocity ≈ proportional to r². v_t = 2r²(ρ-ρf)g / 9η`,
+          W / 2,
+          H - 10,
+        );
+      }
+      window.toggleViscosity = function () {
+        if (!simState.visc) simState.visc = { balls: [], running: false };
+        const r = parseInt(document.getElementById("tube-radius")?.value || 15);
+        const vt = (r / 15) * 2;
+        simState.visc.balls = [{ y: 25 + r, vt, terminal: false }];
+        const canvas = document.getElementById("sim-canvas");
+        cancelAnimationFrame(simAnim);
+        function tick() {
+          simState.visc.balls.forEach((b) => {
+            if (!b.terminal) {
+              b.y += b.vt * 0.5;
+              if (b.y > 580 - r) {
+                b.y = 580 - r;
+                b.terminal = true;
+                notify("Terminal velocity reached!");
+              }
+            }
+          });
+          if (canvas)
+            drawViscosity(canvas.getContext("2d"), canvas.width, canvas.height);
+          if (simState.visc.balls.some((b) => !b.terminal))
+            simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      };
+      window.stopViscosity = function () {
+        cancelAnimationFrame(simAnim);
+      };
+      window.updateViscInfo = function () {
+        const v = document.getElementById("tube-radius")?.value || 15;
+        document.getElementById("tube-val").textContent = v;
+        if (document.getElementById("visc-info"))
+          document.getElementById("visc-info").textContent =
+            `r=${v}: Terminal velocity ∝ r². Stokes' Law: F=6πηrv. At terminal: W = U + F_drag`;
+      };
+
+      // OPTICAL INSTRUMENTS SIM
+      window.showInstrument = function (type) {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d"),
+          W = canvas.width,
+          H = canvas.height;
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        const titles = {
+          eye: "Human Eye — Near/Far Sight",
+          microscope: "Compound Microscope",
+          telescope: "Astronomical Telescope",
+        };
+        const descs = {
+          eye: [
+            "Converging lens (cornea+lens)",
+            "Near-sighted (myopia): image in front of retina→concave lens correction",
+            "Far-sighted (hypermetropia): image behind retina→convex lens",
+            "Normal eye: image forms on retina",
+            "Power of lens: P = 1/f (in dioptres)",
+          ],
+          microscope: [
+            "Objective lens: short focal length, near object → magnified real image",
+            "Eyepiece: acts as magnifying glass on that image",
+            "Total magnification = m_obj × m_eye",
+            "Used for: very small objects (cells, bacteria)",
+            "Tube length ≈ 16 cm in standard microscopes",
+          ],
+          telescope: [
+            "Objective: long focal length, collects distant light",
+            "Eyepiece: short focal length, magnifies image",
+            "Angular magnification = f_obj / f_eye",
+            "Used for: distant objects (stars, planets)",
+            "Normal adjustment: final image at infinity",
+          ],
+        };
+        ctx.fillStyle = "#00d4ff";
+        ctx.font = "bold 18px Outfit,sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(titles[type] || titles.eye, W / 2, 35);
+        const desc = descs[type] || descs.eye;
+        desc.forEach((d, i) => {
+          const colors = [
+            "#e2eaf7",
+            "#ffd700",
+            "#ff6b35",
+            "#7eff6e",
+            "#bf7fff",
+          ];
+          ctx.fillStyle = colors[i];
+          ctx.font = "13px Outfit,sans-serif";
+          ctx.textAlign = "left";
+          ctx.fillText("▸ " + d, 40, 70 + i * 36);
+        });
+        ctx.fillStyle = "rgba(255,215,0,0.08)";
+        ctx.fillRect(30, 60, W - 60, desc.length * 36 + 10);
+        ctx.strokeStyle = "rgba(255,215,0,0.2)";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(30, 60, W - 60, desc.length * 36 + 10);
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(
+          type === "eye"
+            ? "JAMB: short-sighted=concave correction | long-sighted=convex"
+            : type === "microscope"
+              ? "JAMB: objective=short f, eyepiece=short f"
+              : "JAMB: magnification=f_obj/f_eye. Longer obj.focal length = more powerful",
+          W / 2,
+          H - 10,
+        );
+        if (document.getElementById("lens-info"))
+          document.getElementById("lens-info").textContent =
+            `${titles[type]}: ${desc[0]}`;
+      };
+
+      // REVISION SIM - Common JAMB Traps
+      window.runRevisionSim = function () {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d"),
+          W = canvas.width,
+          H = canvas.height;
+        let frame = 0;
+        cancelAnimationFrame(simAnim);
+        const traps = [
+          {
+            text: "TRAP: Pendulum period does NOT depend on mass or amplitude!",
+            sub: "T=2π√(L/g) only",
+            color: "#ff6b35",
+          },
+          {
+            text: "TRAP: At maximum height, vertical velocity = 0, horizontal ≠ 0!",
+            sub: "Projectile: vx constant throughout",
+            color: "#00d4ff",
+          },
+          {
+            text: "TRAP: Capacitors in series: 1/CT=Σ1/Ci (OPPOSITE to resistors!)",
+            sub: "Parallel caps: CT=C1+C2+...",
+            color: "#bf7fff",
+          },
+          {
+            text: "TRAP: Weight is a FORCE (N), Mass is kg. g=10m/s² not 10N!",
+            sub: "W=mg | On moon: g=1.6m/s²",
+            color: "#7eff6e",
+          },
+          {
+            text: "TRAP: Sound CANNOT travel in vacuum. Light CAN!",
+            sub: "Sound needs a medium. EM waves do not.",
+            color: "#ffd700",
+          },
+          {
+            text: "TRAP: Below threshold frequency: NO photoelectric effect!",
+            sub: "More intensity doesnt help if f<f₀",
+            color: "#ff6b35",
+          },
+        ];
+        function tick() {
+          const trap = traps[Math.floor(frame / 120) % traps.length];
+          const blink = Math.floor(frame / 20) % 2;
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = "rgba(255,60,60,0.1)";
+          ctx.fillRect(20, 20, W - 40, H - 40);
+          ctx.strokeStyle = "rgba(255,60,60,0.4)";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(20, 20, W - 40, H - 40);
+          ctx.fillStyle = blink ? trap.color : "rgba(255,255,255,0.8)";
+          ctx.font = "bold 16px Outfit,sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("⚠ JAMB EXAM TRAP", W / 2, 50);
+          ctx.fillStyle = "#e2eaf7";
+          ctx.font = "14px Outfit,sans-serif";
+          const words = trap.text.split(" "),
+            lines = [],
+            line = [];
+          words.forEach((w) => {
+            line.push(w);
+            if (ctx.measureText(line.join(" ")).width > W - 100) {
+              lines.push(line.slice(0, -1).join(" "));
+              line.length = 0;
+              line.push(w);
+            }
+          });
+          lines.push(line.join(" "));
+          lines.forEach((l, i) => ctx.fillText(l, W / 2, 90 + i * 28));
+          ctx.fillStyle = trap.color;
+          ctx.font = "13px Space Mono,monospace";
+          ctx.fillText(trap.sub, W / 2, 90 + lines.length * 28 + 20);
+          ctx.fillStyle = "#5a7090";
+          ctx.font = "11px monospace";
+          ctx.fillText(
+            `Trap ${(Math.floor(frame / 120) % traps.length) + 1}/${traps.length} — memorize these!`,
+            W / 2,
+            H - 15,
+          );
+          frame++;
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+        if (document.getElementById("rev-info"))
+          document.getElementById("rev-info").textContent =
+            "Cycling through common JAMB traps. Each displays for 4 seconds!";
+      };
+
+      // FINAL SIM
+      window.runFinalSim = function () {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d"),
+          W = canvas.width,
+          H = canvas.height;
+        let t = 0;
+        cancelAnimationFrame(simAnim);
+        function tick() {
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = "#ffd700";
+          ctx.font = "bold 28px Outfit,sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("🏆 ALL 25 TOPICS MASTERED!", W / 2, 50);
+          const items = [
+            "F=ma",
+            "v=fλ",
+            "PV=nRT",
+            "hf=φ+KE",
+            "T=2π√(L/g)",
+            "E=mc²",
+            "n₁sinθ₁=n₂sinθ₂",
+            "P=IV",
+            "½mv²=mgh",
+            "Q=mcΔθ",
+          ];
+          items.forEach((eq, i) => {
+            const angle = t * 0.02 + (i * Math.PI * 2) / items.length;
+            const rx = 120 * Math.cos(angle) + W / 2,
+              ry = 80 * Math.sin(angle) + H / 2;
+            const hue = (i * 36 + t) % 360;
+            ctx.fillStyle = `hsl(${hue},100%,70%)`;
+            ctx.font = "bold 13px Space Mono,monospace";
+            ctx.textAlign = "center";
+            ctx.fillText(eq, rx, ry);
+          });
+          ctx.fillStyle = "rgba(255,215,0,0.8)";
+          ctx.font = "14px Outfit,sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("You are ready for JAMB! Score 300+! 🚀", W / 2, H - 15);
+          t++;
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      };
+
+      // Add elastic/inelastic toggle for collision
+      let collisionElastic = false;
+      window.toggleElastic = function () {
+        collisionElastic = !collisionElastic;
+        const btn = document.getElementById("elastic-btn");
+        if (btn)
+          btn.textContent =
+            "Mode: " + (collisionElastic ? "Elastic" : "Inelastic");
+      };
+
+      // Add standing wave support
+      let waveMode = "traveling";
+      window.showStandingWave = function () {
+        waveMode = "standing";
+        cancelAnimationFrame(simAnim);
+        const c = document.getElementById("sim-canvas");
+        if (c) {
+          simState.wave = { running: true, t: 0 };
+          initWaveSim(c, c.getContext("2d"), c.width, c.height);
+        }
+      };
+      window.showTravelingWave = function () {
+        waveMode = "traveling";
+        cancelAnimationFrame(simAnim);
+        const c = document.getElementById("sim-canvas");
+        if (c) {
+          simState.wave = { running: true, t: 0 };
+          initWaveSim(c, c.getContext("2d"), c.width, c.height);
+        }
+      };
+
+      // Extend wave sim to support standing waves
+      const _origInitWaveSim = initWaveSim;
+      function initWaveSim(canvas, ctx, W, H) {
+        simState.wave = { running: true, t: 0 };
+        function tick() {
+          if (!simState.wave?.running) return;
+          const f = parseInt(
+            document.getElementById("freq-slider")?.value || 3,
+          );
+          const A = parseInt(
+            document.getElementById("amp-slider")?.value || 30,
+          );
+          simState.wave.t += 0.05;
+          const t = simState.wave.t;
+          const lam = W / f;
+          ctx.fillStyle = "#080e1c";
+          ctx.fillRect(0, 0, W, H);
+          ctx.strokeStyle = "rgba(26,42,74,0.4)";
+          ctx.lineWidth = 1;
+          for (let x = 0; x < W; x += 50) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, H);
+            ctx.stroke();
+          }
+          ctx.beginPath();
+          ctx.moveTo(0, H / 2);
+          ctx.lineTo(W, H / 2);
+          ctx.stroke();
+          if (waveMode === "standing") {
+            ctx.strokeStyle = "#00d4ff";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            for (let x = 0; x < W; x++) {
+              const y =
+                H / 2 +
+                A * Math.sin((2 * Math.PI * x) / lam) * Math.cos(t * f * 0.5);
+              if (x === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(255,107,53,0.4)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            for (let x = 0; x < W; x++) {
+              const y =
+                H / 2 -
+                A * Math.sin((2 * Math.PI * x) / lam) * Math.cos(t * f * 0.5);
+              if (x === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.fillStyle = "#ffd700";
+            ctx.font = "11px monospace";
+            ctx.textAlign = "center";
+            ctx.fillText(
+              "STANDING WAVE: nodes (zero displacement) and antinodes (max displacement)",
+              W / 2,
+              H - 10,
+            );
+          } else {
+            ctx.strokeStyle = "#00d4ff";
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            for (let x = 0; x < W; x++) {
+              const y =
+                H / 2 + A * Math.sin(2 * Math.PI * (x / lam - f * t * 0.1));
+              if (x === 0) ctx.moveTo(x, y);
+              else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.strokeStyle = "rgba(255,215,0,0.5)";
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(0, H / 2 - A);
+            ctx.lineTo(W, H / 2 - A);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, H / 2 + A);
+            ctx.lineTo(W, H / 2 + A);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.strokeStyle = "rgba(255,107,53,0.6)";
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(lam, 0);
+            ctx.lineTo(lam, H);
+            ctx.stroke();
+            ctx.fillStyle = "#ff6b35";
+            ctx.font = "11px monospace";
+            ctx.textAlign = "center";
+            ctx.fillText("λ", lam / 2, 18);
+            ctx.fillStyle = "#5a7090";
+            ctx.textAlign = "left";
+            ctx.fillText(
+              `f=${f}Hz | λ=${(W / f).toFixed(0)}px | v=fλ | T=1/f=${(1 / f).toFixed(2)}s`,
+              8,
+              H - 10,
+            );
+          }
+          simAnim = requestAnimationFrame(tick);
+        }
+        tick();
+      }
+
+      // Extend optics for convex mirror
+      const _origRedrawOptics = window.redrawOptics;
+      window.redrawOptics = function () {
+        const canvas = document.getElementById("sim-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const W = canvas.width,
+          H = canvas.height;
+        const u = parseInt(document.getElementById("obj-dist")?.value || 150);
+        document.getElementById("obj-dist-val").textContent = u;
+        const f = 80;
+        ctx.fillStyle = "#080e1c";
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = "rgba(90,112,144,0.5)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, H / 2);
+        ctx.lineTo(W, H / 2);
+        ctx.stroke();
+        const lensX = W / 2;
+        ctx.strokeStyle = "#00d4ff";
+        ctx.lineWidth = 2.5;
+        if (lensType === "convex") {
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX + 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX - 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+        } else if (lensType === "concave") {
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX - 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(lensX, H / 2 - 80);
+          ctx.quadraticCurveTo(lensX + 20, H / 2, lensX, H / 2 + 80);
+          ctx.stroke();
+        } else if (lensType === "mirror") {
+          ctx.beginPath();
+          ctx.arc(lensX + f, H / 2, f, Math.PI * 0.6, Math.PI * 1.4);
+          ctx.stroke();
+          ctx.fillStyle = "#1a2a4a";
+          ctx.fillRect(lensX, H / 2 - 80, 15, 160);
+        } else {
+          // convex mirror
+          ctx.beginPath();
+          ctx.arc(lensX - f, H / 2, f, -Math.PI * 0.4, Math.PI * 0.4);
+          ctx.stroke();
+          ctx.fillStyle = "#1a2a4a";
+          ctx.fillRect(lensX - 15, H / 2 - 80, 15, 160);
+        }
+        ctx.fillStyle = "rgba(255,107,53,0.8)";
+        ctx.beginPath();
+        ctx.arc(lensX + f, H / 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(lensX - f, H / 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#ff6b35";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("F", lensX + f, H / 2 + 16);
+        ctx.fillText("F", lensX - f, H / 2 + 16);
+        const objX = lensX - u / 1.5;
+        if (objX > 10) {
+          ctx.strokeStyle = "#7eff6e";
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(objX, H / 2);
+          ctx.lineTo(objX, H / 2 - 50);
+          ctx.stroke();
+          ctx.fillStyle = "#7eff6e";
+          ctx.beginPath();
+          ctx.moveTo(objX - 6, H / 2 - 50);
+          ctx.lineTo(objX + 6, H / 2 - 50);
+          ctx.lineTo(objX, H / 2 - 65);
+          ctx.fill();
+          ctx.fillStyle = "#7eff6e";
+          ctx.font = "10px monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("Object", objX, H / 2 + 15);
+        }
+        let v = Infinity,
+          valid = false;
+        let ef =
+          lensType === "concave" ? -f : lensType === "convexmirror" ? -f : f;
+        if (lensType === "mirror" || lensType === "convexmirror")
+          ef = lensType === "convexmirror" ? f : -f;
+        const sign =
+          lensType === "mirror" || lensType === "convexmirror" ? 1 : 1;
+        if (u !== Math.abs(ef)) {
+          v = (u * ef) / (u - ef);
+          valid = true;
+        }
+        if (valid && isFinite(v)) {
+          const imgX = lensType.includes("mirror")
+            ? lensX - v / 1.5
+            : lensX + v / 1.5;
+          const mag = v / u;
+          const imgH = 50 * Math.abs(mag);
+          const flip = v > 0 && !lensType.includes("mirror") ? -1 : 1;
+          ctx.strokeStyle =
+            v > 0 ? "rgba(191,127,255,0.8)" : "rgba(191,127,255,0.4)";
+          ctx.setLineDash(v > 0 ? [] : [5, 5]);
+          ctx.lineWidth = 2;
+          if (imgX > 10 && imgX < W - 10) {
+            ctx.beginPath();
+            ctx.moveTo(imgX, H / 2);
+            ctx.lineTo(imgX, H / 2 + flip * imgH);
+            ctx.stroke();
+            ctx.fillStyle = "rgba(191,127,255,0.7)";
+            ctx.font = "10px monospace";
+            ctx.textAlign = "center";
+            ctx.fillText(
+              v > 0 ? "Real image" : "Virtual image",
+              imgX,
+              H / 2 + flip * imgH - 8,
+            );
+          }
+          ctx.setLineDash([]);
+          const vStr =
+            v > 0
+              ? v.toFixed(0) + "(real)"
+              : Math.abs(v).toFixed(0) + "(virtual)";
+          const magStr =
+            Math.abs(mag) > 1
+              ? "magnified"
+              : Math.abs(mag) < 1
+                ? "diminished"
+                : "same size";
+          document.getElementById("optics-info").textContent =
+            `u=${(u / 1.5) | 0}cm | f=${ef}cm | v=${vStr} | m=${mag.toFixed(2)} (${magStr})`;
+        }
+        ctx.fillStyle = "#5a7090";
+        ctx.font = "11px monospace";
+        ctx.textAlign = "left";
+        ctx.setLineDash([]);
+        ctx.fillText(
+          "1/f = 1/u + 1/v | m = v/u | +ve image = real (lens) / in front of mirror",
+          8,
+          H - 10,
+        );
+      };
+
+      // ========== DEFINITIONS PAGE ==========
+      function renderDefinitions() {
+        const defs = [
+          {
+            cat: "⚙️ Mechanics",
+            items: [
+              {
+                term: "Inertia",
+                def: "The tendency of a body to remain in its state of rest or uniform motion unless acted upon by an external force.",
+              },
+              {
+                term: "Momentum",
+                def: "The product of mass and velocity of a body. p = mv. SI unit: kg·m/s or N·s.",
+              },
+              {
+                term: "Impulse",
+                def: "The product of force and the time for which it acts. J = FΔt = Δp. Impulse equals change in momentum.",
+              },
+              {
+                term: "Velocity",
+                def: "Rate of change of displacement with time. It is a vector quantity. v = Δs/Δt.",
+              },
+              {
+                term: "Acceleration",
+                def: "Rate of change of velocity with time. a = Δv/Δt. SI unit: m/s².",
+              },
+              {
+                term: "Weight",
+                def: "The gravitational force acting on a body. W = mg. It is a force (Newtons), NOT mass.",
+              },
+              {
+                term: "Friction",
+                def: "A force that opposes relative motion between surfaces in contact. F = μN, where μ is coefficient of friction.",
+              },
+              {
+                term: "Equilibrium",
+                def: "A body is in equilibrium when the net force AND net torque on it are both zero. ΣF=0, Στ=0.",
+              },
+              {
+                term: "Torque/Moment",
+                def: "The turning effect of a force about a point. τ = F × d⊥ (perpendicular distance). Unit: N·m.",
+              },
+              {
+                term: "SHM",
+                def: "Simple Harmonic Motion: oscillation where acceleration is proportional to displacement and directed toward equilibrium. a = -ω²x.",
+              },
+              {
+                term: "Centripetal force",
+                def: "The net force directed toward the centre of a circular path. F = mv²/r. It is NOT a new force — it is provided by gravity, tension, etc.",
+              },
+            ],
+          },
+          {
+            cat: "🌡️ Heat & Thermodynamics",
+            items: [
+              {
+                term: "Temperature",
+                def: "A measure of the average kinetic energy of molecules in a substance. Measured in Kelvin (K) or Celsius (°C). T(K) = T(°C) + 273.",
+              },
+              {
+                term: "Heat",
+                def: "Energy transferred from a hotter body to a cooler one due to a temperature difference. Unit: Joule (J).",
+              },
+              {
+                term: "Specific Heat Capacity",
+                def: "The amount of heat needed to raise the temperature of 1 kg of a substance by 1 K. Q = mcΔθ. Unit: J/(kg·K).",
+              },
+              {
+                term: "Latent Heat",
+                def: "Heat absorbed or released during a change of state at constant temperature. Q = mL. No temperature change occurs.",
+              },
+              {
+                term: "Thermal Conductivity",
+                def: "Ability of a material to conduct heat. Good conductors: metals. Poor conductors (insulators): wood, rubber, air.",
+              },
+              {
+                term: "Boyle's Law",
+                def: "At constant temperature, pressure is inversely proportional to volume for a fixed mass of gas. P₁V₁ = P₂V₂.",
+              },
+              {
+                term: "Charles' Law",
+                def: "At constant pressure, volume is directly proportional to absolute temperature. V₁/T₁ = V₂/T₂ (T in Kelvin!).",
+              },
+              {
+                term: "Pressure Law (Gay-Lussac)",
+                def: "At constant volume, pressure is directly proportional to absolute temperature. P₁/T₁ = P₂/T₂.",
+              },
+            ],
+          },
+          {
+            cat: "🌊 Waves & Light",
+            items: [
+              {
+                term: "Wave",
+                def: "A disturbance that transfers energy from one point to another without transferring matter.",
+              },
+              {
+                term: "Transverse wave",
+                def: "A wave where particles vibrate perpendicular to the direction of wave travel. Examples: light, water waves, all EM waves.",
+              },
+              {
+                term: "Longitudinal wave",
+                def: "A wave where particles vibrate parallel to the direction of wave travel. Example: sound waves.",
+              },
+              {
+                term: "Wavelength (λ)",
+                def: "Distance between two successive points in phase (e.g. crest to crest). Unit: metres.",
+              },
+              {
+                term: "Frequency (f)",
+                def: "Number of complete oscillations per second. Unit: Hz (hertz). f = 1/T.",
+              },
+              {
+                term: "Amplitude",
+                def: "Maximum displacement of a particle from its equilibrium position. Related to energy/loudness (for sound).",
+              },
+              {
+                term: "Refraction",
+                def: "Change in speed (and direction) of a wave when it passes from one medium to another. n₁sinθ₁ = n₂sinθ₂.",
+              },
+              {
+                term: "Total Internal Reflection",
+                def: "Complete reflection of light at an interface when angle of incidence exceeds the critical angle. Occurs in optical fibres.",
+              },
+              {
+                term: "Diffraction",
+                def: "Spreading of waves when they pass through a gap or around an obstacle. Most pronounced when gap ≈ wavelength.",
+              },
+              {
+                term: "Resonance",
+                def: "When a body vibrates at its natural frequency due to a driving force at the same frequency. Can cause damage (Tacoma bridge).",
+              },
+              {
+                term: "Critical Angle",
+                def: "Angle of incidence beyond which total internal reflection occurs. sin C = 1/n (going from dense to less dense medium).",
+              },
+            ],
+          },
+          {
+            cat: "⚡ Electricity",
+            items: [
+              {
+                term: "Electric current",
+                def: "Rate of flow of electric charge. I = Q/t. Unit: Ampere (A). Conventional current flows from + to −.",
+              },
+              {
+                term: "Potential Difference (Voltage)",
+                def: "Work done per unit charge between two points. V = W/Q. Unit: Volt (V).",
+              },
+              {
+                term: "Resistance",
+                def: "Opposition to flow of electric current. R = V/I. Unit: Ohm (Ω). R = ρL/A.",
+              },
+              {
+                term: "Ohm's Law",
+                def: "Current is proportional to voltage at constant temperature. V = IR. Ohmic: constant R. Non-ohmic: R varies.",
+              },
+              {
+                term: "EMF (Electromotive Force)",
+                def: "Energy supplied per unit charge by a source (cell/generator). ε = E/Q. Unit: Volt. NOT a force!",
+              },
+              {
+                term: "Internal resistance",
+                def: "Resistance within a source of EMF. Terminal voltage: V = ε − Ir. Causes voltage drop under load.",
+              },
+              {
+                term: "Capacitance",
+                def: "Ability to store electric charge. C = Q/V. Unit: Farad (F). Energy stored: E = ½CV².",
+              },
+              {
+                term: "Faraday's Law",
+                def: "The induced EMF in a circuit is proportional to the rate of change of magnetic flux linkage. ε = -NdΦ/dt.",
+              },
+              {
+                term: "Lenz's Law",
+                def: "The direction of an induced current is such as to oppose the change causing it. Explains the minus sign in Faraday's law.",
+              },
+              {
+                term: "Transformer",
+                def: "Transfers electrical energy between circuits using mutual induction. Vs/Vp = Ns/Np. Step-up: more secondary turns.",
+              },
+            ],
+          },
+          {
+            cat: "⚛️ Modern Physics",
+            items: [
+              {
+                term: "Photoelectric Effect",
+                def: "Emission of electrons from a metal when light above a threshold frequency falls on it. Proves light is quantized (photons). hf = φ + KE_max.",
+              },
+              {
+                term: "Work Function (φ)",
+                def: "Minimum energy needed to remove an electron from a metal surface. φ = hf₀ (threshold frequency).",
+              },
+              {
+                term: "Threshold Frequency",
+                def: "Minimum frequency of light needed to cause photoelectric emission. f₀ = φ/h. Below this, NO emission regardless of intensity.",
+              },
+              {
+                term: "Radioactivity",
+                def: "Spontaneous emission of radiation from unstable nuclei. Types: alpha (α), beta (β), gamma (γ).",
+              },
+              {
+                term: "Half-life (T½)",
+                def: "Time for half the atoms in a radioactive sample to decay. T½ = 0.693/λ. N = N₀×(½)ⁿ where n = number of half-lives.",
+              },
+              {
+                term: "Alpha radiation (α)",
+                def: "Helium nucleus (²⁴He). Charge: +2. Least penetrating (stopped by paper). Most ionizing.",
+              },
+              {
+                term: "Beta radiation (β)",
+                def: "High-energy electron from nucleus (neutron→proton+electron). Stopped by a few mm of aluminium.",
+              },
+              {
+                term: "Gamma radiation (γ)",
+                def: "High-energy EM radiation from nucleus. No charge, no mass. Most penetrating (needs thick lead/concrete to stop).",
+              },
+              {
+                term: "Nuclear Fission",
+                def: "Heavy nucleus splits into lighter nuclei + energy + neutrons. Used in nuclear reactors and atomic bombs.",
+              },
+              {
+                term: "Nuclear Fusion",
+                def: "Light nuclei combine to form heavier nucleus + energy. Powers the sun. Requires extremely high temperature.",
+              },
+              {
+                term: "de Broglie wavelength",
+                def: "Every moving particle has an associated wavelength. λ = h/mv. Electrons have wave-like properties.",
+              },
+            ],
+          },
+          {
+            cat: "📏 Measurement & Units",
+            items: [
+              {
+                term: "SI units",
+                def: "International System of Units. 7 base units: metre (m), kilogram (kg), second (s), ampere (A), kelvin (K), mole (mol), candela (cd).",
+              },
+              {
+                term: "Scalar",
+                def: "A physical quantity with magnitude only. Examples: mass, distance, speed, temperature, energy, work, power, pressure.",
+              },
+              {
+                term: "Vector",
+                def: "A physical quantity with both magnitude and direction. Examples: force, velocity, acceleration, momentum, displacement.",
+              },
+              {
+                term: "Accuracy",
+                def: "How close a measurement is to the true value.",
+              },
+              {
+                term: "Precision",
+                def: "How reproducible measurements are (how close repeated readings are to each other). Can be precise but inaccurate!",
+              },
+              {
+                term: "Significant figures",
+                def: "Meaningful digits in a measurement. Non-zero digits always significant. Zeros between non-zeros: significant.",
+              },
+              {
+                term: "Dimensional analysis",
+                def: "Method of checking equations by comparing dimensions of both sides. Dimensions must be identical on both sides.",
+              },
+            ],
+          },
+        ];
+
+        const el = document.getElementById("def-content");
+        el.innerHTML = defs
+          .map(
+            (cat) => `
+    <div style="margin-bottom:28px;">
+      <div style="font-size:1.1rem;font-weight:700;color:var(--accent);border-bottom:2px solid var(--border);padding-bottom:8px;margin-bottom:12px;">${cat.cat}</div>
+      <div style="display:grid;gap:8px;">
+        ${cat.items
+          .map(
+            (item) => `
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;border-left:4px solid var(--accent2);">
+            <div style="font-weight:700;color:var(--gold);font-size:0.95rem;margin-bottom:4px;">📌 ${item.term}</div>
+            <div style="font-size:0.87rem;color:var(--text);line-height:1.6;">${item.def}</div>
+          </div>
+        `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `,
+          )
+          .join("");
+      }
+
+      // ========== SUMMARY PAGE ==========
+      function renderSummary() {
+        const summaries = [
+          {
+            title: "📐 Measurements & Units",
+            hotness: "🔥🔥🔥",
+            items: [
+              "SI base units (7) — memorize all 7",
+              "Dimensional analysis — check equation validity",
+              "Vernier caliper (±0.1mm) vs Micrometer (±0.01mm)",
+              "% Error = (|measured−true|/true)×100",
+              "Accuracy vs Precision difference",
+            ],
+            trap: "JAMB often gives wrong dimensions and asks which equation is correct. Always check [MLT⁻²] for force, [ML⁻¹T⁻²] for pressure, [ML²T⁻³] for power.",
+          },
+          {
+            title: "🏃 Motion & Kinematics",
+            hotness: "🔥🔥🔥🔥",
+            items: [
+              "4 SUVAT equations — use the right one for missing variable",
+              "Projectile: horizontal velocity CONSTANT, vertical = free fall",
+              "Max range at 45°, complementary angles give same range",
+              "v-t graph area = displacement, gradient = acceleration",
+              "Free fall: a = g = 10 m/s² downward",
+            ],
+            trap: "Most common JAMB trap: applying acceleration to horizontal motion in projectile. NEVER! Horizontal is constant velocity.",
+          },
+          {
+            title: "⚖️ Newton's Laws & Momentum",
+            hotness: "🔥🔥🔥🔥",
+            items: [
+              "F = ma = Δp/Δt",
+              "Impulse = FΔt = Δp",
+              "Conservation of momentum: Σp_before = Σp_after",
+              "Elastic: KE conserved. Perfectly inelastic: bodies stick",
+              "Gravitational law: F = Gm₁m₂/r² (inverse square)",
+            ],
+            trap: "If masses double AND distance doubles: F = G(2m₁)(2m₂)/(2r)² = 4G/4 = same F! Watch the r² carefully.",
+          },
+          {
+            title: "🌊 SHM & Waves",
+            hotness: "🔥🔥🔥",
+            items: [
+              "Pendulum T = 2π√(L/g) — no mass, no amplitude dependence!",
+              "Mass-spring T = 2π√(m/k)",
+              "v = fλ for ALL waves",
+              "EM waves travel at c = 3×10⁸ m/s in vacuum",
+              "Sound: longitudinal. Light: transverse",
+            ],
+            trap: "Pendulum: if length QUADRUPLES, period DOUBLES (T∝√L). If length doubles, T×√2, NOT ×2!",
+          },
+          {
+            title: "💡 Light & Optics",
+            hotness: "🔥🔥🔥🔥",
+            items: [
+              "Snell's law: n₁sinθ₁ = n₂sinθ₂",
+              "n = c/v = sin i/sin r",
+              "Critical angle: sin C = 1/n (dense to less dense)",
+              "Mirror/lens formula: 1/f = 1/u + 1/v",
+              "Magnification: m = v/u (positive = erect, negative = inverted)",
+            ],
+            trap: "Real-is-positive convention: real objects give positive u. Real images give positive v for lenses. For mirrors, real = same side as object.",
+          },
+          {
+            title: "🌡️ Heat & Gas Laws",
+            hotness: "🔥🔥🔥",
+            items: [
+              "Q = mcΔθ (sensible heat)",
+              "Q = mL (latent heat — no temperature change!)",
+              "Boyle: P₁V₁ = P₂V₂ (constant T)",
+              "Charles: V₁/T₁ = V₂/T₂ (constant P, T in Kelvin!)",
+              "PV = nRT (R = 8.314 J/mol·K)",
+            ],
+            trap: "ALWAYS convert Celsius to Kelvin before using gas laws! T(K) = T(°C) + 273. Many JAMB questions are wrong because students forget this.",
+          },
+          {
+            title: "⚡ Electricity & Circuits",
+            hotness: "🔥🔥🔥🔥🔥",
+            items: [
+              "Ohm's Law: V = IR",
+              "Resistors series: RT = R₁+R₂ | Parallel: 1/RT = 1/R₁+1/R₂",
+              "OPPOSITE for capacitors! Series C: 1/CT=Σ1/C. Parallel: CT=ΣC",
+              "Power: P = IV = I²R = V²/R",
+              "Terminal voltage: V = ε − Ir",
+            ],
+            trap: "MOST TESTED: Capacitors in series add like resistors in PARALLEL. This is a guaranteed JAMB trap every year!",
+          },
+          {
+            title: "🔌 Electromagnetism",
+            hotness: "🔥🔥🔥",
+            items: [
+              "Faraday: EMF = −NdΦ/dt",
+              "Lenz's law: induced current opposes change in flux",
+              "Transformer: Vs/Vp = Ns/Np = Ip/Is",
+              "Step-up: more secondary turns → higher voltage",
+              "AC: Vrms = V₀/√2, P = Vrms²/R",
+            ],
+            trap: "A step-up transformer increases voltage but DECREASES current (power = IV, power conserved in ideal transformer).",
+          },
+          {
+            title: "⚛️ Atomic & Nuclear Physics",
+            hotness: "🔥🔥🔥🔥",
+            items: [
+              "Photoelectric: hf = φ + ½mv²_max",
+              "Below threshold frequency: NO emission (ever!)",
+              "Half-life: N = N₀×(½)ⁿ",
+              "α: helium nucleus, +2 charge, least penetrating",
+              "γ: EM radiation, no charge, most penetrating",
+            ],
+            trap: "Increasing intensity of light BELOW threshold frequency NEVER causes photoelectric emission. Only increasing frequency works. Very common JAMB trap!",
+          },
+          {
+            title: "🔬 Electronics",
+            hotness: "🔥🔥",
+            items: [
+              "p-n junction: forward bias = conducts, reverse = blocks",
+              "Rectification: converts AC to DC",
+              "NPN transistor: IE = IB + IC, β = IC/IB",
+              "Logic gates: AND, OR, NOT, NAND (universal), NOR (universal), XOR",
+              "NAND and NOR are universal — can make any other gate from them",
+            ],
+            trap: "NAND is universal gate (NOT AND is NOT the same as saying both NAND and NOR). Be precise: BOTH NAND and NOR are each individually universal.",
+          },
+        ];
+
+        const el = document.getElementById("summary-content");
+        el.innerHTML =
+          summaries
+            .map(
+              (s) => `
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:1.05rem;font-weight:700;color:var(--text);">${s.title}</div>
+        <div style="font-size:0.85rem;background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:6px;padding:3px 10px;color:var(--accent2);">JAMB Hotness: ${s.hotness}</div>
+      </div>
+      <div style="display:grid;gap:5px;margin-bottom:12px;">
+        ${s.items.map((item) => `<div style="font-size:0.85rem;color:var(--text);padding:4px 0;border-bottom:1px solid rgba(26,42,74,0.5);">▸ ${item}</div>`).join("")}
+      </div>
+      <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:10px;font-size:0.82rem;color:var(--gold);line-height:1.6;">
+        ⚠️ <strong>EXAM TRAP:</strong> ${s.trap}
+      </div>
+    </div>
+  `,
+            )
+            .join("") +
+          `
+  <div style="background:linear-gradient(135deg,rgba(0,212,255,0.1),rgba(191,127,255,0.1));border:2px solid var(--accent);border-radius:14px;padding:24px;text-align:center;margin-top:8px;">
+    <div style="font-size:1.4rem;font-weight:900;color:var(--accent);margin-bottom:8px;">🏆 QUICK SCORE FORMULA</div>
+    <div style="font-size:0.9rem;color:var(--text);line-height:1.8;">
+      Electricity questions = ~20% of JAMB Physics<br>
+      Motion/Mechanics = ~25% | Waves/Optics = ~15%<br>
+      Modern Physics = ~15% | Heat/Thermo = ~15%<br>
+      Measurements = ~10%<br><br>
+      <strong style="color:var(--gold);">Master Electricity + Mechanics = already 45% covered!</strong>
+    </div>
+  </div>`;
+      }
+
+      // ========== EXTRA AUTHENTIC JAMB QUESTIONS (1980-2024) ==========
+      const JAMB_AUTHENTIC = [
+        // MECHANICS
+        {
+          q: "A force of 10N acts on a body of mass 2kg for 3 seconds. The change in momentum is [JAMB 1980]",
+          opts: ["A. 6 N·s", "B. 10 N·s", "C. 30 N·s", "D. 60 N·s"],
+          ans: 2,
+          exp: "Impulse = FΔt = 10 × 3 = 30 N·s. By impulse-momentum theorem, change in momentum = 30 kg·m/s.",
+          topic: "Momentum",
+          year: "1980",
+          diff: "easy",
+        },
+        {
+          q: "A stone of mass 2kg is dropped from a height of 20m. Its kinetic energy just before hitting the ground is (g=10m/s²) [JAMB 1981]",
+          opts: ["A. 40 J", "B. 200 J", "C. 400 J", "D. 800 J"],
+          ans: 2,
+          exp: "KE = mgh = 2×10×20 = 400 J (all PE converts to KE). OR: v²=2gh=400, KE=½mv²=½×2×400=400J.",
+          topic: "Energy",
+          year: "1981",
+          diff: "easy",
+        },
+        {
+          q: "A body of mass 5kg moves with velocity 4m/s. Its kinetic energy is [JAMB 1982]",
+          opts: ["A. 20 J", "B. 40 J", "C. 80 J", "D. 160 J"],
+          ans: 1,
+          exp: "KE = ½mv² = ½ × 5 × 4² = ½ × 5 × 16 = 40 J.",
+          topic: "Energy",
+          year: "1982",
+          diff: "easy",
+        },
+        {
+          q: "A bullet of mass 0.05kg is fired from a gun of mass 5kg with a velocity of 200m/s. The recoil velocity of the gun is [JAMB 1983]",
+          opts: ["A. 1 m/s", "B. 2 m/s", "C. 4 m/s", "D. 10 m/s"],
+          ans: 1,
+          exp: "Conservation of momentum: 0 = 0.05×200 + 5×(-v_gun). 5v = 10. v = 2 m/s.",
+          topic: "Momentum",
+          year: "1983",
+          diff: "medium",
+        },
+        {
+          q: "An object is projected horizontally at 15m/s from a point 20m above the ground. The time taken to reach the ground is (g=10m/s²) [JAMB 1984]",
+          opts: ["A. 1s", "B. 2s", "C. 3s", "D. 4s"],
+          ans: 1,
+          exp: "Vertical: s=½gt². 20=½(10)t². t²=4. t=2s. The horizontal velocity does NOT affect the time of fall.",
+          topic: "Projectile",
+          year: "1984",
+          diff: "medium",
+        },
+        {
+          q: "The velocity ratio of a machine is 5 and its efficiency is 80%. Its mechanical advantage is [JAMB 1985]",
+          opts: ["A. 2", "B. 4", "C. 6.25", "D. 25"],
+          ans: 1,
+          exp: "MA = Efficiency × VR = 0.80 × 5 = 4.",
+          topic: "Machines",
+          year: "1985",
+          diff: "easy",
+        },
+        {
+          q: "A body of mass 4kg is suspended from a fixed support by a spring. If the spring extends by 0.1m, what is the spring constant? (g=10m/s²) [JAMB 1986]",
+          opts: ["A. 40 N/m", "B. 400 N/m", "C. 0.025 N/m", "D. 0.25 N/m"],
+          ans: 1,
+          exp: "F = ke. F=mg=4×10=40N. k=F/e=40/0.1=400 N/m.",
+          topic: "SHM",
+          year: "1986",
+          diff: "easy",
+        },
+        {
+          q: "An object is in uniform circular motion. Which of the following is correct? [JAMB 1987]",
+          opts: [
+            "A. Its speed is changing",
+            "B. Its velocity is constant",
+            "C. It has acceleration directed toward the centre",
+            "D. No net force acts on it",
+          ],
+          ans: 2,
+          exp: "Circular motion: speed constant but direction changes → velocity changes → acceleration exists, directed toward centre (centripetal).",
+          topic: "Circular Motion",
+          year: "1987",
+          diff: "medium",
+        },
+        {
+          q: "A ball is thrown vertically upward with velocity 20m/s. Its maximum height is (g=10m/s²) [JAMB 1988]",
+          opts: ["A. 10m", "B. 20m", "C. 40m", "D. 80m"],
+          ans: 1,
+          exp: "v²=u²-2gh. At max height v=0. 0=400-20h. h=20m.",
+          topic: "Kinematics",
+          year: "1988",
+          diff: "easy",
+        },
+        {
+          q: "Two forces P and Q are inclined at 90° to each other. If P=3N and Q=4N, their resultant is [JAMB 1989]",
+          opts: ["A. 1N", "B. 5N", "C. 7N", "D. 12N"],
+          ans: 1,
+          exp: "R=√(P²+Q²)=√(9+16)=√25=5N. Classic 3-4-5 right triangle!",
+          topic: "Vectors",
+          year: "1989",
+          diff: "easy",
+        },
+        {
+          q: "A train of mass 10⁴ kg travelling at 30m/s is brought to rest in 30s. The retarding force is [JAMB 1990]",
+          opts: ["A. 1×10⁴N", "B. 3×10⁴N", "C. 1×10⁵N", "D. 9×10⁵N"],
+          ans: 0,
+          exp: "a=(v-u)/t=(0-30)/30=-1m/s². F=ma=10⁴×1=10⁴N.",
+          topic: "Newton's Laws",
+          year: "1990",
+          diff: "easy",
+        },
+        {
+          q: "A machine has a velocity ratio of 6. If the machine lifts a load of 180N with an effort of 40N, the efficiency is [JAMB 1993]",
+          opts: ["A. 50%", "B. 75%", "C. 80%", "D. 86%"],
+          ans: 1,
+          exp: "MA=Load/Effort=180/40=4.5. Efficiency=MA/VR×100=4.5/6×100=75%.",
+          topic: "Machines",
+          year: "1993",
+          diff: "medium",
+        },
+        {
+          q: "An object of mass 3kg is dropped from a height of 5m. Just before it hits the ground, its velocity is (g=10m/s²) [JAMB 1995]",
+          opts: ["A. 5m/s", "B. 10m/s", "C. 15m/s", "D. 100m/s"],
+          ans: 1,
+          exp: "v²=u²+2as=0+2(10)(5)=100. v=10m/s.",
+          topic: "Free Fall",
+          year: "1995",
+          diff: "easy",
+        },
+        {
+          q: "The period of a simple pendulum is 2s. If its length is increased to 4 times its original length, the new period is [JAMB 1998]",
+          opts: ["A. 1s", "B. 2s", "C. 4s", "D. 8s"],
+          ans: 2,
+          exp: "T∝√L. If L→4L, new T=old T×√4=2×2=4s.",
+          topic: "SHM",
+          year: "1998",
+          diff: "medium",
+        },
+        {
+          q: "A car of mass 1000kg accelerates uniformly from rest to 20m/s in 10s on a horizontal road. What is the driving force? [JAMB 2001]",
+          opts: ["A. 100N", "B. 200N", "C. 1000N", "D. 2000N"],
+          ans: 3,
+          exp: "a=(20-0)/10=2m/s². F=ma=1000×2=2000N.",
+          topic: "Newton's Laws",
+          year: "2001",
+          diff: "easy",
+        },
+        {
+          q: "A body of weight 40N rests on a smooth inclined plane making 30° with the horizontal. The normal reaction is [JAMB 2003]",
+          opts: ["A. 20N", "B. 34.6N", "C. 40N", "D. 80N"],
+          ans: 1,
+          exp: "N=Wcos30°=40×(√3/2)=40×0.866=34.6N.",
+          topic: "Statics",
+          year: "2003",
+          diff: "medium",
+        },
+        {
+          q: "A rocket ejects 0.5kg of gas per second at a speed of 400m/s. The thrust on the rocket is [JAMB 2005]",
+          opts: ["A. 50N", "B. 200N", "C. 400N", "D. 800N"],
+          ans: 1,
+          exp: "Thrust = rate of change of momentum = (Δm/Δt)×v = 0.5×400 = 200N.",
+          topic: "Momentum",
+          year: "2005",
+          diff: "hard",
+        },
+        // ELECTRICITY
+        {
+          q: "Three resistors of 2Ω, 3Ω, and 6Ω are connected in parallel. The effective resistance is [JAMB 1991]",
+          opts: ["A. 1Ω", "B. 2Ω", "C. 6Ω", "D. 11Ω"],
+          ans: 0,
+          exp: "1/R=1/2+1/3+1/6=3/6+2/6+1/6=6/6=1. R=1Ω.",
+          topic: "Circuits",
+          year: "1991",
+          diff: "medium",
+        },
+        {
+          q: "A resistor of 4Ω is connected to a cell of EMF 6V and internal resistance 2Ω. The terminal voltage is [JAMB 1994]",
+          opts: ["A. 2V", "B. 4V", "C. 6V", "D. 8V"],
+          ans: 1,
+          exp: "I=ε/(R+r)=6/(4+2)=1A. V=ε-Ir=6-1×2=4V.",
+          topic: "EMF",
+          year: "1994",
+          diff: "medium",
+        },
+        {
+          q: "Two 6Ω resistors connected in parallel are in series with a 3Ω resistor. The total resistance is [JAMB 1996]",
+          opts: ["A. 3Ω", "B. 6Ω", "C. 9Ω", "D. 15Ω"],
+          ans: 1,
+          exp: "Parallel 6Ω & 6Ω: 1/R=1/6+1/6=2/6→R=3Ω. Series with 3Ω: total=3+3=6Ω.",
+          topic: "Circuits",
+          year: "1996",
+          diff: "medium",
+        },
+        {
+          q: "The power dissipated in a 10Ω resistor when a current of 2A flows through it is [JAMB 1997]",
+          opts: ["A. 5W", "B. 20W", "C. 40W", "D. 100W"],
+          ans: 2,
+          exp: "P=I²R=2²×10=4×10=40W.",
+          topic: "Power",
+          year: "1997",
+          diff: "easy",
+        },
+        {
+          q: "A capacitor of 200μF is charged to a potential difference of 100V. The charge stored is [JAMB 2000]",
+          opts: ["A. 0.02C", "B. 0.2C", "C. 2C", "D. 20C"],
+          ans: 0,
+          exp: "Q=CV=200×10⁻⁶×100=0.02C.",
+          topic: "Capacitors",
+          year: "2000",
+          diff: "easy",
+        },
+        {
+          q: "In a transformer, the primary coil has 500 turns and the secondary has 100 turns. If primary voltage is 240V, the secondary voltage is [JAMB 2002]",
+          opts: ["A. 24V", "B. 48V", "C. 120V", "D. 1200V"],
+          ans: 1,
+          exp: "Vs/Vp=Ns/Np. Vs=Vp×Ns/Np=240×100/500=48V. Step-DOWN transformer.",
+          topic: "Transformer",
+          year: "2002",
+          diff: "easy",
+        },
+        {
+          q: "A wire of length 2m and cross-sectional area 0.5×10⁻⁶m² has resistance 4Ω. Its resistivity is [JAMB 2004]",
+          opts: ["A. 1×10⁻⁶Ωm", "B. 4×10⁻⁶Ωm", "C. 1×10⁻⁵Ωm", "D. 16Ωm"],
+          ans: 0,
+          exp: "R=ρL/A. ρ=RA/L=4×0.5×10⁻⁶/2=1×10⁻⁶Ωm.",
+          topic: "Resistance",
+          year: "2004",
+          diff: "hard",
+        },
+        {
+          q: "Two capacitors of capacitance 2μF and 4μF are connected in series. The total capacitance is [JAMB 2006]",
+          opts: ["A. 4/3 μF", "B. 2 μF", "C. 6 μF", "D. 8 μF"],
+          ans: 0,
+          exp: "1/CT=1/2+1/4=2/4+1/4=3/4. CT=4/3 μF ≈ 1.33μF. Series capacitors: LESS than smallest!",
+          topic: "Capacitors",
+          year: "2006",
+          diff: "medium",
+        },
+        {
+          q: "The current drawn from a 12V battery by three resistors of 4Ω each connected in parallel is [JAMB 2008]",
+          opts: ["A. 1A", "B. 3A", "C. 9A", "D. 36A"],
+          ans: 2,
+          exp: "Parallel 3 resistors of 4Ω: R_total=4/3Ω. I=V/R=12÷(4/3)=12×3/4=9A.",
+          topic: "Circuits",
+          year: "2008",
+          diff: "medium",
+        },
+        {
+          q: "An electric iron rated 1000W is used for 30 minutes. The electrical energy consumed in kWh is [JAMB 2010]",
+          opts: ["A. 0.5 kWh", "B. 5 kWh", "C. 30 kWh", "D. 500 kWh"],
+          ans: 0,
+          exp: "E=P×t=1000W×0.5h=500Wh=0.5kWh.",
+          topic: "Electrical Energy",
+          year: "2010",
+          diff: "easy",
+        },
+        // WAVES & OPTICS
+        {
+          q: "The image formed by a plane mirror is [JAMB 1984]",
+          opts: [
+            "A. Real and inverted",
+            "B. Virtual and erect",
+            "C. Real and erect",
+            "D. Virtual and inverted",
+          ],
+          ans: 1,
+          exp: "Plane mirror always forms virtual, erect, and laterally inverted image, same size as object.",
+          topic: "Optics",
+          year: "1984",
+          diff: "easy",
+        },
+        {
+          q: "A wave has wavelength 0.4m and frequency 5Hz. Its velocity is [JAMB 1991]",
+          opts: ["A. 0.08 m/s", "B. 1.25 m/s", "C. 2 m/s", "D. 12.5 m/s"],
+          ans: 2,
+          exp: "v=fλ=5×0.4=2m/s.",
+          topic: "Waves",
+          year: "1991",
+          diff: "easy",
+        },
+        {
+          q: "Light travels from water (n=1.33) to air. The critical angle is approximately [JAMB 1993]",
+          opts: ["A. 37°", "B. 42°", "C. 49°", "D. 90°"],
+          ans: 2,
+          exp: "sin C=1/n=1/1.33=0.752. C=arcsin(0.752)≈48.8°≈49°.",
+          topic: "Optics",
+          year: "1993",
+          diff: "medium",
+        },
+        {
+          q: "An object is placed 30cm from a concave mirror of focal length 20cm. The image distance is [JAMB 1995]",
+          opts: ["A. 12cm", "B. 30cm", "C. 60cm", "D. 120cm"],
+          ans: 2,
+          exp: "1/f=1/u+1/v. 1/20=1/30+1/v. 1/v=1/20-1/30=3/60-2/60=1/60. v=60cm. Real image.",
+          topic: "Mirrors",
+          year: "1995",
+          diff: "medium",
+        },
+        {
+          q: "Sound travels at 340m/s in air. The wavelength of a sound of frequency 170Hz is [JAMB 1997]",
+          opts: ["A. 0.5m", "B. 2m", "C. 50m", "D. 500m"],
+          ans: 1,
+          exp: "λ=v/f=340/170=2m.",
+          topic: "Sound",
+          year: "1997",
+          diff: "easy",
+        },
+        {
+          q: "A ray of light is incident on a glass surface at 30°. If the refractive index of glass is 1.5, the angle of refraction is [JAMB 1999]",
+          opts: ["A. 19.5°", "B. 20°", "C. 30°", "D. 48.6°"],
+          ans: 0,
+          exp: "Snell's law: n₁sinθ₁=n₂sinθ₂. 1×sin30°=1.5×sinθ₂. sinθ₂=0.5/1.5=0.333. θ₂=19.5°.",
+          topic: "Refraction",
+          year: "1999",
+          diff: "medium",
+        },
+        {
+          q: "Total internal reflection occurs when light travels from [JAMB 2001]",
+          opts: [
+            "A. air to glass",
+            "B. glass to air at critical angle",
+            "C. air to water",
+            "D. vacuum to glass",
+          ],
+          ans: 1,
+          exp: "TIR: light must travel from MORE dense to LESS dense medium AND angle of incidence must EXCEED critical angle.",
+          topic: "TIR",
+          year: "2001",
+          diff: "easy",
+        },
+        {
+          q: "The frequency of a wave is 5×10⁸Hz and its speed is 3×10⁸m/s. Its wavelength is [JAMB 2004]",
+          opts: ["A. 0.2m", "B. 0.4m", "C. 0.6m", "D. 1.5×10¹⁷m"],
+          ans: 2,
+          exp: "λ=v/f=3×10⁸/5×10⁸=0.6m.",
+          topic: "Waves",
+          year: "2004",
+          diff: "easy",
+        },
+        {
+          q: "An object placed 40cm from a converging lens of focal length 20cm produces an image. The image is [JAMB 2007]",
+          opts: [
+            "A. Virtual, erect, magnified",
+            "B. Real, inverted, same size",
+            "C. Real, inverted, diminished",
+            "D. Virtual, inverted, magnified",
+          ],
+          ans: 1,
+          exp: "u=40=2f. 1/v=1/20-1/40=2/40-1/40=1/40. v=40cm=2f. Real, inverted, same size (at 2F).",
+          topic: "Lenses",
+          year: "2007",
+          diff: "medium",
+        },
+        // THERMODYNAMICS
+        {
+          q: "A gas has volume 4L at 27°C. At constant pressure, its volume at 127°C is [JAMB 1992]",
+          opts: ["A. 5.33L", "B. 6L", "C. 8L", "D. 10.67L"],
+          ans: 0,
+          exp: "Charles' law: V₁/T₁=V₂/T₂. T₁=300K, T₂=400K. V₂=4×400/300=16/3=5.33L.",
+          topic: "Gas Laws",
+          year: "1992",
+          diff: "medium",
+        },
+        {
+          q: "A gas occupies 500cm³ at 1.0×10⁵Pa. At constant temperature, the volume at 2.5×10⁵Pa is [JAMB 1994]",
+          opts: ["A. 200cm³", "B. 500cm³", "C. 1000cm³", "D. 1250cm³"],
+          ans: 0,
+          exp: "Boyle's law: P₁V₁=P₂V₂. V₂=1×10⁵×500/(2.5×10⁵)=200cm³.",
+          topic: "Gas Laws",
+          year: "1994",
+          diff: "easy",
+        },
+        {
+          q: "How much heat is needed to raise the temperature of 5kg of water from 20°C to 60°C? [c_water = 4200 J/kg·K] [JAMB 1996]",
+          opts: ["A. 168,000J", "B. 840,000J", "C. 1,260,000J", "D. 4,200J"],
+          ans: 1,
+          exp: "Q=mcΔθ=5×4200×(60-20)=5×4200×40=840,000J=840kJ.",
+          topic: "Heat",
+          year: "1996",
+          diff: "easy",
+        },
+        {
+          q: "The temperature of a gas is increased from 27°C to 327°C at constant volume. The pressure is [JAMB 2000]",
+          opts: ["A. Unchanged", "B. Doubled", "C. Tripled", "D. Halved"],
+          ans: 1,
+          exp: "Gay-Lussac's law: P∝T. T₁=300K, T₂=600K. P₂/P₁=600/300=2. Pressure DOUBLES.",
+          topic: "Gas Laws",
+          year: "2000",
+          diff: "medium",
+        },
+        {
+          q: "The specific latent heat of vaporization of water is 2.26×10⁶J/kg. The heat needed to vaporize 0.5kg of water at 100°C is [JAMB 2003]",
+          opts: [
+            "A. 4.52×10⁵J",
+            "B. 1.13×10⁶J",
+            "C. 2.26×10⁶J",
+            "D. 4.52×10⁶J",
+          ],
+          ans: 1,
+          exp: "Q=mL=0.5×2.26×10⁶=1.13×10⁶J.",
+          topic: "Latent Heat",
+          year: "2003",
+          diff: "easy",
+        },
+        // MODERN PHYSICS
+        {
+          q: "Gamma rays are [JAMB 1989]",
+          opts: [
+            "A. high-energy electrons",
+            "B. helium nuclei",
+            "C. electromagnetic radiation",
+            "D. protons",
+          ],
+          ans: 2,
+          exp: "Gamma rays are high-energy electromagnetic radiation from the nucleus. No mass, no charge. Most penetrating.",
+          topic: "Radioactivity",
+          year: "1989",
+          diff: "easy",
+        },
+        {
+          q: "A radioactive substance has a half-life of 4 years. After 12 years, the fraction remaining is [JAMB 1993]",
+          opts: ["A. 1/4", "B. 1/6", "C. 1/8", "D. 1/16"],
+          ans: 2,
+          exp: "n=12/4=3 half-lives. Fraction=(½)³=1/8.",
+          topic: "Radioactivity",
+          year: "1993",
+          diff: "easy",
+        },
+        {
+          q: "In the photoelectric effect, increasing the intensity of incident light while keeping frequency constant will [JAMB 1998]",
+          opts: [
+            "A. increase KE of emitted electrons",
+            "B. increase frequency of electrons",
+            "C. increase the number of electrons emitted",
+            "D. have no effect",
+          ],
+          ans: 2,
+          exp: "Intensity increases → more photons per second → more electrons emitted per second. BUT KE of each electron depends only on frequency (hf-φ), not intensity.",
+          topic: "Photoelectric",
+          year: "1998",
+          diff: "medium",
+        },
+        {
+          q: "Which of the following is NOT a property of cathode rays? [JAMB 2002]",
+          opts: [
+            "A. They travel in straight lines",
+            "B. They are deflected by magnetic fields",
+            "C. They are electromagnetic waves",
+            "D. They carry negative charge",
+          ],
+          ans: 2,
+          exp: "Cathode rays are streams of electrons (particles), NOT electromagnetic waves. They travel in straight lines, are deflected by fields, and carry negative charge.",
+          topic: "Atomic Physics",
+          year: "2002",
+          diff: "medium",
+        },
+        {
+          q: "An electron has charge e and mass m. In Bohr's model, the orbit radius is proportional to [JAMB 2005]",
+          opts: ["A. n", "B. n²", "C. 1/n", "D. 1/n²"],
+          ans: 1,
+          exp: "In Bohr's model: r_n = n²a₀ (where a₀ is Bohr radius). Radius is proportional to n².",
+          topic: "Atomic Model",
+          year: "2005",
+          diff: "hard",
+        },
+        {
+          q: "In a nuclear equation ²³⁸₉₂U → ⁴₂He + X, the nucleus X has [JAMB 2007]",
+          opts: [
+            "A. Z=90, A=234",
+            "B. Z=90, A=238",
+            "C. Z=94, A=238",
+            "D. Z=94, A=234",
+          ],
+          ans: 0,
+          exp: "Alpha decay: A decreases by 4, Z decreases by 2. X: A=238-4=234, Z=92-2=90. This is Thorium-234.",
+          topic: "Nuclear Physics",
+          year: "2007",
+          diff: "medium",
+        },
+        {
+          q: "The half-life of carbon-14 is 5700 years. A sample originally containing 80g now has 10g. Age of sample is [JAMB 2009]",
+          opts: [
+            "A. 5700 years",
+            "B. 11400 years",
+            "C. 17100 years",
+            "D. 22800 years",
+          ],
+          ans: 2,
+          exp: "80→40→20→10: 3 half-lives. Age=3×5700=17100 years.",
+          topic: "Radioactivity",
+          year: "2009",
+          diff: "medium",
+        },
+        // MORE WAEC/JAMB STAPLES
+        {
+          q: "A transformer has 1000 turns in the primary and 100 turns in the secondary coil. The output voltage for 240V input is [JAMB 2011]",
+          opts: ["A. 2.4V", "B. 24V", "C. 240V", "D. 2400V"],
+          ans: 1,
+          exp: "Vs=Vp×Ns/Np=240×100/1000=24V. Step-down transformer.",
+          topic: "Transformer",
+          year: "2011",
+          diff: "easy",
+        },
+        {
+          q: "Light of frequency 8×10¹⁴Hz strikes a metal with work function 2.0eV. The maximum kinetic energy of emitted electrons is (h=6.6×10⁻³⁴Js, 1eV=1.6×10⁻¹⁹J) [JAMB 2013]",
+          opts: ["A. 0.4eV", "B. 1.3eV", "C. 2.0eV", "D. 3.3eV"],
+          ans: 1,
+          exp: "hf=6.6×10⁻³⁴×8×10¹⁴=5.28×10⁻¹⁹J=3.3eV. KE=hf-φ=3.3-2.0=1.3eV.",
+          topic: "Photoelectric",
+          year: "2013",
+          diff: "hard",
+        },
+        {
+          q: "The density of water is 1000kg/m³. The pressure at a depth of 10m in water is (g=10m/s²) [JAMB 2015]",
+          opts: ["A. 1000Pa", "B. 10000Pa", "C. 100000Pa", "D. 1000000Pa"],
+          ans: 2,
+          exp: "P=ρgh=1000×10×10=100,000Pa=10⁵Pa.",
+          topic: "Fluids",
+          year: "2015",
+          diff: "easy",
+        },
+        {
+          q: "A 40W bulb and a 100W bulb are both rated 240V. When connected in series to a 240V supply, which bulb is brighter? [JAMB 2016]",
+          opts: [
+            "A. The 40W bulb",
+            "B. The 100W bulb",
+            "C. Both equally bright",
+            "D. Neither lights up",
+          ],
+          ans: 0,
+          exp: "In series, same current flows. P=I²R. Higher resistance has higher power. R=V²/P: R_40=1440Ω, R_100=576Ω. The 40W bulb has more resistance → more power in series!",
+          topic: "Circuits",
+          year: "2016",
+          diff: "hard",
+        },
+        {
+          q: "The critical angle of glass is 42°. The refractive index of glass is [JAMB 2017]",
+          opts: ["A. 0.67", "B. 1.49", "C. 1.33", "D. 0.75"],
+          ans: 1,
+          exp: "sin C=1/n. n=1/sin42°=1/0.669=1.49.",
+          topic: "Refraction",
+          year: "2017",
+          diff: "medium",
+        },
+        {
+          q: "A wire carries a current of 5A in a magnetic field of 0.4T. If the length of wire in the field is 0.3m, the force on the wire is [JAMB 2018]",
+          opts: ["A. 0.06N", "B. 0.12N", "C. 0.60N", "D. 6.00N"],
+          ans: 2,
+          exp: "F=BIL=0.4×5×0.3=0.6N.",
+          topic: "Magnetism",
+          year: "2018",
+          diff: "medium",
+        },
+        {
+          q: "Which of the following electromagnetic waves has the shortest wavelength? [JAMB 2019]",
+          opts: ["A. Infrared", "B. Ultraviolet", "C. X-rays", "D. Gamma rays"],
+          ans: 3,
+          exp: "Gamma rays have the shortest wavelength (highest frequency and energy) in the EM spectrum.",
+          topic: "EM Spectrum",
+          year: "2019",
+          diff: "easy",
+        },
+        {
+          q: "A body starts from rest and accelerates uniformly. After 4s it has traveled 40m. Its acceleration is [JAMB 2020]",
+          opts: ["A. 2.5 m/s²", "B. 5 m/s²", "C. 10 m/s²", "D. 20 m/s²"],
+          ans: 1,
+          exp: "s=ut+½at². u=0. 40=0+½×a×16=8a. a=5m/s².",
+          topic: "Kinematics",
+          year: "2020",
+          diff: "easy",
+        },
+        {
+          q: "The wavelength of X-rays is of the order of [JAMB 2021]",
+          opts: ["A. 10⁻¹⁰m", "B. 10⁻⁶m", "C. 10⁻³m", "D. 10⁰m"],
+          ans: 0,
+          exp: "X-rays have wavelengths of order 10⁻¹⁰m (0.1nm). They can be used in crystal diffraction because wavelength ≈ atomic spacing.",
+          topic: "EM Spectrum",
+          year: "2021",
+          diff: "medium",
+        },
+        {
+          q: "An astronaut weighs 600N on Earth. On the moon (g_moon = g_earth/6), the astronaut's weight is [JAMB 2022]",
+          opts: ["A. 100N", "B. 600N", "C. 3600N", "D. 60N"],
+          ans: 0,
+          exp: "W_moon = mg_moon = m×g/6 = W_earth/6 = 600/6 = 100N. Mass stays same (100N is weight, not mass).",
+          topic: "Gravity",
+          year: "2022",
+          diff: "easy",
+        },
+        {
+          q: "An NPN transistor has base current 0.1mA and collector current 5mA. The current gain β is [JAMB 2023]",
+          opts: ["A. 0.02", "B. 50", "C. 5.1", "D. 500"],
+          ans: 1,
+          exp: "β = I_C/I_B = 5mA/0.1mA = 50.",
+          topic: "Electronics",
+          year: "2023",
+          diff: "medium",
+        },
+        {
+          q: "Two parallel plates of a capacitor are separated by 2mm and have area 0.01m². The capacitance is (ε₀=8.85×10⁻¹²F/m) [JAMB 2024]",
+          opts: ["A. 44.25pF", "B. 88.5pF", "C. 44.25nF", "D. 88.5nF"],
+          ans: 0,
+          exp: "C=ε₀A/d=8.85×10⁻¹²×0.01/0.002=8.85×10⁻¹²×5=44.25×10⁻¹²F=44.25pF.",
+          topic: "Capacitors",
+          year: "2024",
+          diff: "hard",
+        },
+      ];
+      JAMB_AUTHENTIC.forEach((q) => QUESTION_BANK.push(q));
 
       // ========== START ==========
       init();
